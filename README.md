@@ -16,15 +16,15 @@ A Windows-hosted, web-based security analysis dashboard for post-compromise AD r
 
 ## Key Features
 
-- **LDAP Enumeration** — Users, groups, computers, OUs, and ACLs via LDAPS (port 636)
-- **Attack Path Discovery** — BFS/DFS engine finds privilege escalation chains to Domain Admin
-- **Misconfiguration Detection** — ACL abuse, DA sprawl, Kerberoastable accounts, nested group abuse
-- **Interactive Dashboard** — Dark glassmorphism UI with risk gauges, graphs, and real-time search
-- **Graph Visualization** — Cytoscape.js-powered permission graph with severity-colored nodes
-- **Remediation Engine** — Copy-ready PowerShell commands for every finding
-- **MITRE ATT&CK Mapping** — Every finding and attack path tagged with technique IDs
-- **Scan History** — Track and compare enumeration results over time
-- **BloodHound Import** — Ingest BloodHound JSON exports for analysis
+- **LDAP Enumeration** - Users, groups, computers, OUs, and ACLs via LDAPS (port 636)
+- **Attack Path Discovery** - BFS/DFS engine finds privilege escalation chains to Domain Admin
+- **Misconfiguration Detection** - ACL abuse, DA sprawl, Kerberoastable accounts, nested group abuse
+- **Interactive Dashboard** - Dark glassmorphism UI with risk gauges, graphs, and real-time search
+- **Graph Visualization** - Cytoscape.js-powered permission graph with severity-colored nodes
+- **Remediation Engine** - Copy-ready PowerShell commands for every finding
+- **MITRE ATT&CK Mapping** - Every finding and attack path tagged with technique IDs
+- **Scan History** - Track and compare enumeration results over time
+- **BloodHound Import** - Ingest BloodHound JSON exports for analysis
 
 ---
 
