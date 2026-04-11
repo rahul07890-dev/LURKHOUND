@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green" />
 </p>
 
-# 🐾 LURKHOUND
+# LURKHOUND
 
 **Active Directory Attack-Path Discovery Mapper**
 
@@ -14,17 +14,17 @@ A Windows-hosted, web-based security analysis dashboard for post-compromise AD r
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- 🔍 **LDAP Enumeration** — Users, groups, computers, OUs, and ACLs via LDAPS (port 636)
-- 🕸️ **Attack Path Discovery** — BFS/DFS engine finds privilege escalation chains to Domain Admin
-- 🛡️ **Misconfiguration Detection** — ACL abuse, DA sprawl, Kerberoastable accounts, nested group abuse
-- 📊 **Interactive Dashboard** — Dark glassmorphism UI with risk gauges, graphs, and real-time search
-- 🗺️ **Graph Visualization** — Cytoscape.js-powered permission graph with severity-colored nodes
-- 🩺 **Remediation Engine** — Copy-ready PowerShell commands for every finding
-- 🎯 **MITRE ATT&CK Mapping** — Every finding and attack path tagged with technique IDs
-- 📜 **Scan History** — Track and compare enumeration results over time
-- 📥 **BloodHound Import** — Ingest BloodHound JSON exports for analysis
+- **LDAP Enumeration** — Users, groups, computers, OUs, and ACLs via LDAPS (port 636)
+- **Attack Path Discovery** — BFS/DFS engine finds privilege escalation chains to Domain Admin
+- **Misconfiguration Detection** — ACL abuse, DA sprawl, Kerberoastable accounts, nested group abuse
+- **Interactive Dashboard** — Dark glassmorphism UI with risk gauges, graphs, and real-time search
+- **Graph Visualization** — Cytoscape.js-powered permission graph with severity-colored nodes
+- **Remediation Engine** — Copy-ready PowerShell commands for every finding
+- **MITRE ATT&CK Mapping** — Every finding and attack path tagged with technique IDs
+- **Scan History** — Track and compare enumeration results over time
+- **BloodHound Import** — Ingest BloodHound JSON exports for analysis
 
 ---
 
@@ -123,7 +123,7 @@ LURKHOUND/
 
 ---
 
-## 🚀 Setup & Run
+## Setup & Run
 
 ### Option A: Quick Start (Recommended)
 
@@ -193,13 +193,13 @@ Fill in the login form:
 - **Domain:** Your AD domain (e.g., `MARVEL.local`)
 - **Username:** Domain account with read access
 - **Password:** Domain account password
-- **LDAPS:** ✅ Enabled (port 636)
+- **LDAPS:** Enabled (port 636)
 
 Click **Connect & Enumerate** — the system will authenticate, enumerate all AD objects, build the permission graph, and display results.
 
 ---
 
-## 🔐 Security Design
+## Security Design
 
 | Principle | Implementation |
 |---|---|
@@ -259,7 +259,7 @@ Click **Connect & Enumerate** — the system will authenticate, enumerate all AD
 
 ---
 
-## 🔍 Detection Coverage
+## Detection Coverage
 
 | Category | Detections |
 |---|---|
@@ -272,7 +272,7 @@ Click **Connect & Enumerate** — the system will authenticate, enumerate all AD
 
 ---
 
-## 🛡 MITRE ATT&CK Coverage
+## MITRE ATT&CK Coverage
 
 | Technique | Name |
 |---|---|
@@ -287,7 +287,7 @@ Click **Connect & Enumerate** — the system will authenticate, enumerate all AD
 
 ---
 
-## 🧪 Testing with Sample Data
+## Testing with Sample Data
 
 A mock MARVEL.local dataset is provided in `sample_data/marvel_sample.json` with:
 - 7 users (including Tony Stark, Natasha Romanoff, Peter Parker)
@@ -300,7 +300,7 @@ You can also import BloodHound JSON exports via the `/api/bloodhound/import` end
 
 ---
 
-## 🌐 REST API Reference
+## REST API Reference
 
 | Endpoint | Method | Description |
 |---|---|---|
@@ -319,7 +319,7 @@ You can also import BloodHound JSON exports via the `/api/bloodhound/import` end
 
 ---
 
-## 🏛️ Architecture
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -357,7 +357,7 @@ You can also import BloodHound JSON exports via the `/api/bloodhound/import` end
 
 ---
 
-## ⚠️ Important Notes
+## Important Notes
 
 - **This tool does NOT perform:** LLMNR poisoning, SMB relay, NTLM relay, or hash cracking
 - **Starting assumption:** Valid domain credentials are already available
@@ -367,7 +367,7 @@ You can also import BloodHound JSON exports via the `/api/bloodhound/import` end
 
 ---
 
-## 📋 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -381,12 +381,12 @@ You can also import BloodHound JSON exports via the `/api/bloodhound/import` end
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
 
 <p align="center">
-  <b>🐾 LURKHOUND</b> — Sniff out every attack path in your Active Directory.
+  <b>LURKHOUND</b> — Sniff out every attack path in your Active Directory.
 </p>
