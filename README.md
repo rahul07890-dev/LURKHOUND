@@ -28,7 +28,7 @@ A Windows-hosted, web-based security analysis dashboard for post-compromise AD r
 
 ---
 
-## 🏗 Project Structure
+## Project Structure
 
 ```
 LURKHOUND/
@@ -110,7 +110,7 @@ LURKHOUND/
 
 ---
 
-## ⚙️ Prerequisites
+## Prerequisites
 
 | Requirement | Version |
 |---|---|
