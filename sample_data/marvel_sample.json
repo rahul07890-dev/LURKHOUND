@@ -1,0 +1,439 @@
+{
+    "meta": {
+        "domain": "MARVEL.local",
+        "dc_ip": "192.168.186.152",
+        "description": "Sample dataset simulating MARVEL.local AD environment for demo/testing"
+    },
+    "users": [
+        {
+            "dn": "CN=ADMINISTRATOR,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "ADMINISTRATOR",
+            "display_name": "Administrator",
+            "description": "Built-in account for administering the computer/domain",
+            "object_type": "User",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-500",
+            "member_of": [
+                "CN=GROUP POLICY CREATOR OWNERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=DOMAIN ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=ENTERPRISE ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=SCHEMA ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=ADMINISTRATORS,CN=BUILTIN,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "66048",
+                "adminCount": "1",
+                "is_admin": true,
+                "is_disabled": false,
+                "is_password_never_expires": true,
+                "has_spn": false
+            }
+        },
+        {
+            "dn": "CN=TONY STARK,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "TSTARK",
+            "display_name": "Tony Stark",
+            "description": "Iron Man — Engineering Lead",
+            "object_type": "User",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1103",
+            "member_of": [
+                "CN=DOMAIN USERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=AVENGERS-IT,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "512",
+                "adminCount": "0",
+                "is_admin": false,
+                "is_disabled": false,
+                "is_password_never_expires": false,
+                "has_spn": false
+            }
+        },
+        {
+            "dn": "CN=PETER PARKER,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "PPARKER",
+            "display_name": "Peter Parker",
+            "description": "Spider-Man — Junior Developer",
+            "object_type": "User",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1104",
+            "member_of": [
+                "CN=DOMAIN USERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=HELPDESK,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "512",
+                "adminCount": "0",
+                "is_admin": false,
+                "is_disabled": false,
+                "is_password_never_expires": false,
+                "has_spn": false
+            }
+        },
+        {
+            "dn": "CN=NATASHA ROMANOFF,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "NROMANOFF",
+            "display_name": "Natasha Romanoff",
+            "description": "Black Widow — Security Analyst",
+            "object_type": "User",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1105",
+            "member_of": [
+                "CN=DOMAIN USERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=AVENGERS-IT,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=DOMAIN ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "66048",
+                "adminCount": "1",
+                "is_admin": true,
+                "is_disabled": false,
+                "is_password_never_expires": true,
+                "has_spn": false
+            }
+        },
+        {
+            "dn": "CN=BRUCE BANNER,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "BBANNER",
+            "display_name": "Bruce Banner",
+            "description": "Hulk — Research Service Account",
+            "object_type": "User",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1106",
+            "member_of": [
+                "CN=DOMAIN USERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=RESEARCH-DEPT,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "512",
+                "adminCount": "0",
+                "is_admin": false,
+                "is_disabled": false,
+                "is_password_never_expires": false,
+                "has_spn": true,
+                "servicePrincipalName": [
+                    "HTTP/bbanner.MARVEL.local"
+                ]
+            }
+        },
+        {
+            "dn": "CN=STEVE ROGERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "SROGERS",
+            "display_name": "Steve Rogers",
+            "description": "Captain America — HR Manager",
+            "object_type": "User",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1107",
+            "member_of": [
+                "CN=DOMAIN USERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=HELPDESK,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "512",
+                "adminCount": "0",
+                "is_admin": false,
+                "is_disabled": false,
+                "is_password_never_expires": false,
+                "has_spn": false
+            }
+        },
+        {
+            "dn": "CN=WANDA MAXIMOFF,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "WMAXIMOFF",
+            "display_name": "Wanda Maximoff",
+            "description": "Scarlet Witch — Disabled account",
+            "object_type": "User",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1108",
+            "member_of": [
+                "CN=DOMAIN USERS,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "514",
+                "adminCount": "0",
+                "is_admin": false,
+                "is_disabled": true,
+                "is_password_never_expires": false,
+                "has_spn": false
+            }
+        }
+    ],
+    "groups": [
+        {
+            "dn": "CN=DOMAIN ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "DOMAIN ADMINS",
+            "display_name": "Domain Admins",
+            "description": "Designated administrators of the domain",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-512",
+            "members": [
+                "CN=ADMINISTRATOR,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=NATASHA ROMANOFF,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [
+                "CN=ADMINISTRATORS,CN=BUILTIN,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "adminCount": "1",
+                "is_privileged": true,
+                "is_admin": true
+            }
+        },
+        {
+            "dn": "CN=ENTERPRISE ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "ENTERPRISE ADMINS",
+            "display_name": "Enterprise Admins",
+            "description": "Designated administrators of the enterprise",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-519",
+            "members": [
+                "CN=ADMINISTRATOR,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [
+                "CN=ADMINISTRATORS,CN=BUILTIN,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "adminCount": "1",
+                "is_privileged": true,
+                "is_admin": true
+            }
+        },
+        {
+            "dn": "CN=SCHEMA ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "SCHEMA ADMINS",
+            "display_name": "Schema Admins",
+            "description": "Designated administrators of the schema",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-518",
+            "members": [
+                "CN=ADMINISTRATOR,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [],
+            "attributes": {
+                "adminCount": "1",
+                "is_privileged": true,
+                "is_admin": true
+            }
+        },
+        {
+            "dn": "CN=ADMINISTRATORS,CN=BUILTIN,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "ADMINISTRATORS",
+            "display_name": "Administrators",
+            "description": "Administrators have complete and unrestricted access to the computer/domain",
+            "object_type": "Group",
+            "sid": "S-1-5-32-544",
+            "members": [
+                "CN=ADMINISTRATOR,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=DOMAIN ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=ENTERPRISE ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [],
+            "attributes": {
+                "adminCount": "1",
+                "is_privileged": true,
+                "is_admin": true
+            }
+        },
+        {
+            "dn": "CN=DOMAIN USERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "DOMAIN USERS",
+            "display_name": "Domain Users",
+            "description": "All domain users",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-513",
+            "members": [
+                "CN=TONY STARK,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=PETER PARKER,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=NATASHA ROMANOFF,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=BRUCE BANNER,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=STEVE ROGERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=WANDA MAXIMOFF,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [],
+            "attributes": {
+                "adminCount": "0",
+                "is_privileged": false,
+                "is_admin": false
+            }
+        },
+        {
+            "dn": "CN=AVENGERS-IT,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "AVENGERS-IT",
+            "display_name": "Avengers IT Team",
+            "description": "IT team with elevated access",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1200",
+            "members": [
+                "CN=TONY STARK,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=NATASHA ROMANOFF,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [
+                "CN=DOMAIN ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "adminCount": "0",
+                "is_privileged": false,
+                "is_admin": false
+            }
+        },
+        {
+            "dn": "CN=HELPDESK,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "HELPDESK",
+            "display_name": "Help Desk",
+            "description": "Help desk personnel",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1201",
+            "members": [
+                "CN=PETER PARKER,CN=USERS,DC=MARVEL,DC=LOCAL",
+                "CN=STEVE ROGERS,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [],
+            "attributes": {
+                "adminCount": "0",
+                "is_privileged": false,
+                "is_admin": false
+            }
+        },
+        {
+            "dn": "CN=RESEARCH-DEPT,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "RESEARCH-DEPT",
+            "display_name": "Research Department",
+            "description": "Scientific research department",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1202",
+            "members": [
+                "CN=BRUCE BANNER,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [],
+            "attributes": {
+                "adminCount": "0",
+                "is_privileged": false,
+                "is_admin": false
+            }
+        },
+        {
+            "dn": "CN=GROUP POLICY CREATOR OWNERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "GROUP POLICY CREATOR OWNERS",
+            "display_name": "Group Policy Creator Owners",
+            "description": "Members can modify group policy for the domain",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-520",
+            "members": [
+                "CN=ADMINISTRATOR,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [],
+            "attributes": {
+                "adminCount": "1",
+                "is_privileged": true,
+                "is_admin": false
+            }
+        },
+        {
+            "dn": "CN=DOMAIN CONTROLLERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "DOMAIN CONTROLLERS",
+            "display_name": "Domain Controllers",
+            "description": "All domain controllers in the domain",
+            "object_type": "Group",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-516",
+            "members": [
+                "CN=MARVEL-DC,OU=DOMAIN CONTROLLERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "member_of": [],
+            "attributes": {
+                "adminCount": "1",
+                "is_privileged": true,
+                "is_admin": false
+            }
+        }
+    ],
+    "computers": [
+        {
+            "dn": "CN=MARVEL-DC,OU=DOMAIN CONTROLLERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "MARVEL-DC",
+            "display_name": "MARVEL-DC",
+            "description": "Primary Domain Controller",
+            "object_type": "Computer",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1001",
+            "member_of": [
+                "CN=DOMAIN CONTROLLERS,CN=USERS,DC=MARVEL,DC=LOCAL"
+            ],
+            "attributes": {
+                "userAccountControl": "532480",
+                "operatingSystem": "Windows Server 2019 Standard",
+                "operatingSystemVersion": "10.0 (17763)",
+                "dNSHostName": "MARVEL-DC.MARVEL.local",
+                "is_domain_controller": true,
+                "os": "Windows Server 2019 Standard",
+                "hostname": "MARVEL-DC.MARVEL.local"
+            }
+        },
+        {
+            "dn": "CN=WORKSTATION01,CN=COMPUTERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "WORKSTATION01",
+            "display_name": "WORKSTATION01",
+            "description": "Tony Stark's workstation",
+            "object_type": "Computer",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1100",
+            "member_of": [],
+            "attributes": {
+                "userAccountControl": "4096",
+                "operatingSystem": "Windows 11 Pro",
+                "operatingSystemVersion": "10.0 (22000)",
+                "dNSHostName": "WORKSTATION01.MARVEL.local",
+                "is_domain_controller": false,
+                "os": "Windows 11 Pro",
+                "hostname": "WORKSTATION01.MARVEL.local"
+            }
+        },
+        {
+            "dn": "CN=WORKSTATION02,CN=COMPUTERS,DC=MARVEL,DC=LOCAL",
+            "sam_account_name": "WORKSTATION02",
+            "display_name": "WORKSTATION02",
+            "description": "General use workstation",
+            "object_type": "Computer",
+            "sid": "S-1-5-21-1234567890-1234567890-1234567890-1101",
+            "member_of": [],
+            "attributes": {
+                "userAccountControl": "4096",
+                "operatingSystem": "Windows 10 Pro",
+                "operatingSystemVersion": "10.0 (19045)",
+                "dNSHostName": "WORKSTATION02.MARVEL.local",
+                "is_domain_controller": false,
+                "os": "Windows 10 Pro",
+                "hostname": "WORKSTATION02.MARVEL.local"
+            }
+        }
+    ],
+    "acls": [
+        {
+            "source": "CN=AVENGERS-IT,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "source_name": "AVENGERS-IT",
+            "target": "CN=DOMAIN ADMINS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "target_name": "DOMAIN ADMINS",
+            "permission": "WriteDACL",
+            "source_type": "Group",
+            "target_type": "Group"
+        },
+        {
+            "source": "CN=PETER PARKER,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "source_name": "PPARKER",
+            "target": "CN=TONY STARK,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "target_name": "TSTARK",
+            "permission": "GenericAll",
+            "source_type": "User",
+            "target_type": "User"
+        },
+        {
+            "source": "CN=HELPDESK,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "source_name": "HELPDESK",
+            "target": "CN=NATASHA ROMANOFF,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "target_name": "NROMANOFF",
+            "permission": "GenericWrite",
+            "source_type": "Group",
+            "target_type": "User"
+        },
+        {
+            "source": "CN=STEVE ROGERS,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "source_name": "SROGERS",
+            "target": "CN=AVENGERS-IT,CN=USERS,DC=MARVEL,DC=LOCAL",
+            "target_name": "AVENGERS-IT",
+            "permission": "WriteOwner",
+            "source_type": "User",
+            "target_type": "Group"
+        }
+    ]
+}

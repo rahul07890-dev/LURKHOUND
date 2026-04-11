@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AD Attack-Path Discovery Mapper — MARVEL.local</title>
+    <meta name="description"
+        content="Active Directory Security Analysis Dashboard — LDAP enumeration, permission graph, attack path discovery, and remediation guidance for MARVEL.local" />
+
+    <!-- Cytoscape.js for graph visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+    <!-- ═══════════════════ TOP NAVIGATION ═══════════════════ -->
+    <nav class="topnav">
+        <div class="topnav-brand">
+            <div class="brand-icon">⬡</div>
+            <div>
+                <span class="brand-title">AD Attack-Path Mapper</span>
+                <span class="brand-domain" id="nav-domain">MARVEL.local</span>
+            </div>
+        </div>
+        <div class="topnav-center">
+            <button class="nav-tab active" id="tab-overview" onclick="showPanel('overview')">
+                <span class="tab-icon">◈</span> Domain Overview
+            </button>
+            <button class="nav-tab" id="tab-objects" onclick="showPanel('objects')">
+                <span class="tab-icon">◉</span> Object Explorer
+            </button>
+            <button class="nav-tab" id="tab-graph" onclick="showPanel('graph')">
+                <span class="tab-icon">⬡</span> Graph View
+            </button>
+            <button class="nav-tab" id="tab-paths" onclick="showPanel('paths')">
+                <span class="tab-icon">◆</span> Attack Paths
+            </button>
+            <button class="nav-tab" id="tab-findings" onclick="showPanel('findings')">
+                <span class="tab-icon">⚠</span> Findings
+                <span class="tab-badge" id="findings-badge" style="display:none"></span>
+            </button>
+        </div>
+        <div class="topnav-right">
+            <div class="risk-pill" id="risk-pill" style="display:none"></div>
+            <button class="btn-logout" id="btn-logout" onclick="handleLogout()" style="display:none">
+                ✕ Disconnect
+            </button>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════ LOGIN SCREEN ═══════════════════ -->
+    <div id="screen-login" class="screen active">
+        <div class="login-bg">
+            <div class="login-particles">
+                <div class="particle" style="--x:10%;--y:20%;--s:3px;--d:8s"></div>
+                <div class="particle" style="--x:80%;--y:10%;--s:2px;--d:12s"></div>
+                <div class="particle" style="--x:30%;--y:70%;--s:4px;--d:6s"></div>
+                <div class="particle" style="--x:90%;--y:60%;--s:2px;--d:10s"></div>
+                <div class="particle" style="--x:50%;--y:40%;--s:3px;--d:9s"></div>
+                <div class="particle" style="--x:15%;--y:85%;--s:2px;--d:7s"></div>
+                <div class="particle" style="--x:70%;--y:30%;--s:5px;--d:14s"></div>
+            </div>
+            <div class="login-card">
+                <div class="login-logo">
+                    <div class="logo-hex">⬡</div>
+                    <h1>AD Attack-Path<br />Discovery Mapper</h1>
+                    <p class="login-subtitle">Active Directory Security Analysis Platform</p>
+                </div>
+
+                <div class="security-notice">
+                    <span class="notice-icon">🔒</span>
+                    <span>Credentials are used in-memory only and never stored. Connection uses LDAPS (TLS)
+                        encryption.</span>
+                </div>
+
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="dc-ip">Domain Controller IP</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">⊕</span>
+                            <input type="text" id="dc-ip" placeholder="192.168.186.152" autocomplete="off"
+                                spellcheck="false" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="domain">Domain Name</label>
+                        <div class="input-wrap">
+                            <span class="input-icon">◎</span>
+                            <input type="text" id="domain" placeholder="MARVEL.local" autocomplete="off"
+                                spellcheck="false" required />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">◯</span>
+                                <input type="text" id="username" placeholder="administrator" autocomplete="username"
+                                    required />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div class="input-wrap">
+                                <span class="input-icon">◈</span>
+                                <input type="password" id="password" placeholder="••••••••"
+                                    autocomplete="current-password" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="use-ldaps" checked />
+                            <span class="checkbox-custom"></span>
+                            Use LDAPS (Port 636) — Recommended
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-login" id="btn-login">
+                        <span id="btn-login-text">
+                            <span class="btn-icon">⬡</span> Connect & Enumerate
+                        </span>
+                        <span id="btn-login-spinner" class="spinner" style="display:none"></span>
+                    </button>
+                </form>
+
+                <div id="login-error" class="login-error" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ MAIN DASHBOARD ═══════════════════ -->
+    <div id="screen-dashboard" class="screen" style="display:none">
+
+        <!-- ── OVERVIEW PANEL ── -->
+        <div id="panel-overview" class="panel active">
+            <div class="panel-header">
+                <h2>Domain Overview</h2>
+                <span id="overview-domain-label" class="panel-domain-badge"></span>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-grid">
+                <div class="stat-card stat-blue">
+                    <div class="stat-icon">👤</div>
+                    <div class="stat-value" id="stat-users">—</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card stat-purple">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="stat-groups">—</div>
+                    <div class="stat-label">Total Groups</div>
+                </div>
+                <div class="stat-card stat-teal">
+                    <div class="stat-icon">💻</div>
+                    <div class="stat-value" id="stat-computers">—</div>
+                    <div class="stat-label">Computers</div>
+                </div>
+                <div class="stat-card stat-orange">
+                    <div class="stat-icon">🛡</div>
+                    <div class="stat-value" id="stat-privileged">—</div>
+                    <div class="stat-label">Privileged Accounts</div>
+                </div>
+                <div class="stat-card stat-red">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value" id="stat-paths">—</div>
+                    <div class="stat-label">Attack Paths</div>
+                </div>
+                <div class="stat-card stat-yellow">
+                    <div class="stat-icon">⚠</div>
+                    <div class="stat-value" id="stat-findings">—</div>
+                    <div class="stat-label">Findings</div>
+                </div>
+            </div>
+
+            <!-- Risk Gauge + Domain Admins -->
+            <div class="overview-row">
+                <div class="card risk-card">
+                    <div class="card-title">Risk Score</div>
+                    <div class="risk-gauge" id="risk-gauge-container">
+                        <div class="gauge-ring" id="gauge-ring">
+                            <div class="gauge-inner">
+                                <div class="gauge-score" id="gauge-score">—</div>
+                                <div class="gauge-label" id="gauge-level">Analyzing...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="risk-legend">
+                        <span class="legend-item low">0–24 Low</span>
+                        <span class="legend-item medium">25–49 Medium</span>
+                        <span class="legend-item high">50–74 High</span>
+                        <span class="legend-item critical">75+ Critical</span>
+                    </div>
+                </div>
+
+                <div class="card admins-card">
+                    <div class="card-title">Domain Administrators</div>
+                    <div id="domain-admins-list" class="admins-list">
+                        <div class="loading-dots"><span></span><span></span><span></span></div>
+                    </div>
+                </div>
+
+                <div class="card quickfind-card">
+                    <div class="card-title">Quick Find</div>
+                    <div class="quickfind-wrap">
+                        <input type="text" id="quickfind-input" class="quickfind-input"
+                            placeholder="Search users, groups, computers..." oninput="quickFind(this.value)" />
+                        <div id="quickfind-results" class="quickfind-results" style="display:none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Findings Preview -->
+            <div class="card">
+                <div class="card-title">Top Risks</div>
+                <div id="top-risks-list" class="top-risks-list">
+                    <div class="loading-dots"><span></span><span></span><span></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── OBJECT EXPLORER PANEL ── -->
+        <div id="panel-objects" class="panel">
+            <div class="panel-header">
+                <h2>Object Explorer</h2>
+                <div class="object-tabs">
+                    <button class="obj-tab active" id="obj-tab-users" onclick="switchObjectTab('users')">Users</button>
+                    <button class="obj-tab" id="obj-tab-groups" onclick="switchObjectTab('groups')">Groups</button>
+                    <button class="obj-tab" id="obj-tab-computers"
+                        onclick="switchObjectTab('computers')">Computers</button>
+                </div>
+            </div>
+
+            <div class="objects-layout">
+                <div class="objects-list-wrap">
+                    <div class="search-bar">
+                        <input type="text" id="object-search" placeholder="Filter objects..."
+                            oninput="filterObjects(this.value)" />
+                    </div>
+                    <div id="objects-list" class="objects-list"></div>
+                </div>
+                <div class="object-detail" id="object-detail">
+                    <div class="detail-placeholder">
+                        <div class="placeholder-icon">◎</div>
+                        <p>Select an object to view details</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── GRAPH VIEW PANEL ── -->
+        <div id="panel-graph" class="panel">
+            <div class="panel-header">
+                <h2>AD Permission Graph</h2>
+                <div class="graph-toolbar">
+                    <!-- Node type filters -->
+                    <div class="graph-filter-group">
+                        <button class="graph-filter-btn active" id="gf-users" onclick="toggleGraphFilter('users')">👤
+                            Users</button>
+                        <button class="graph-filter-btn active" id="gf-groups" onclick="toggleGraphFilter('groups')">👥
+                            Groups</button>
+                        <button class="graph-filter-btn active" id="gf-computers"
+                            onclick="toggleGraphFilter('computers')">💻 Computers</button>
+                    </div>
+                    <div class="graph-sep"></div>
+                    <!-- Layout switcher -->
+                    <select id="graph-layout" onchange="changeGraphLayout(this.value)" class="filter-select">
+                        <option value="cose">Force-directed</option>
+                        <option value="breadthfirst">Hierarchy</option>
+                        <option value="circle">Circle</option>
+                        <option value="concentric">Concentric</option>
+                        <option value="grid">Grid</option>
+                    </select>
+                    <!-- Search -->
+                    <div class="graph-search-wrap">
+                        <input type="text" id="graph-search" class="graph-search-input" placeholder="Highlight node…"
+                            oninput="highlightGraphNode(this.value)" />
+                    </div>
+                    <button class="graph-btn" onclick="fitGraph()" title="Fit to screen">⊡ Fit</button>
+                    <button class="graph-btn" onclick="resetGraphHighlight()" title="Clear highlight">↺ Reset</button>
+                </div>
+            </div>
+
+            <div class="graph-main">
+                <!-- Cytoscape canvas -->
+                <div id="full-graph-container" class="full-graph-container">
+                    <div id="full-cy" style="width:100%;height:100%"></div>
+                    <div id="graph-loading" class="graph-overlay">
+                        <div class="loading-dots"><span></span><span></span><span></span></div>
+                        <p style="color:var(--text-secondary);margin-top:8px">Building graph…</p>
+                    </div>
+                </div>
+
+                <!-- Side info panel -->
+                <div class="graph-info-panel" id="graph-info-panel">
+                    <div class="graph-legend">
+                        <div class="graph-legend-title">Node Types</div>
+                        <div class="legend-row"><span class="legend-dot" style="background:#4f9cf9"></span> User</div>
+                        <div class="legend-row"><span class="legend-dot"
+                                style="background:#a855f7; border-radius:3px"></span> Group</div>
+                        <div class="legend-dot-diamond-wrap"><span class="legend-dot-diamond"
+                                style="background:#2dd4bf"></span> Computer</div>
+                        <div class="legend-row"><span class="legend-dot"
+                                style="background:#f87171; border: 2px solid #ef4444"></span> High-Value Target</div>
+                        <div class="legend-row"><span class="legend-dot"
+                                style="background:#fbbf24; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)"></span>
+                            DC</div>
+
+                        <div class="graph-legend-title" style="margin-top:16px">Edge Types</div>
+                        <div class="legend-row"><span class="legend-line" style="background:#4f9cf9"></span> MemberOf
+                        </div>
+                        <div class="legend-row"><span class="legend-line" style="background:#f87171"></span> AdminTo
+                        </div>
+                        <div class="legend-row"><span class="legend-line" style="background:#ef4444"></span> GenericAll
+                        </div>
+                        <div class="legend-row"><span class="legend-line" style="background:#fb923c"></span>
+                            GenericWrite</div>
+                        <div class="legend-row"><span class="legend-line" style="background:#fbbf24"></span> WriteDACL
+                        </div>
+                        <div class="legend-row"><span class="legend-line" style="background:#f59e0b"></span> WriteOwner
+                        </div>
+                    </div>
+
+                    <!-- Selected node detail -->
+                    <div class="graph-node-detail" id="graph-node-detail" style="display:none">
+                        <div class="graph-legend-title" id="gnd-type">Node</div>
+                        <div class="gnd-name" id="gnd-name"></div>
+                        <div id="gnd-props"></div>
+                        <div class="gnd-actions">
+                            <button class="graph-btn" onclick="showConnectedEdges()" style="width:100%;margin-top:4px">⚑
+                                Show connections</button>
+                            <button class="graph-btn" onclick="jumpToObjectFromGraph()"
+                                style="width:100%;margin-top:4px">↗ View full details</button>
+                        </div>
+                    </div>
+
+                    <div
+                        style="margin-top:auto; padding-top:16px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted)">
+                        <div id="graph-stats-label"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ATTACK PATHS PANEL ── -->
+        <div id="panel-paths" class="panel">
+            <div class="panel-header">
+                <h2>Attack Path Viewer</h2>
+                <div class="paths-controls">
+                    <select id="path-filter-severity" onchange="filterPaths()" class="filter-select">
+                        <option value="ALL">All Severities</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                    <select id="path-filter-type" onchange="filterPaths()" class="filter-select">
+                        <option value="ALL">All Types</option>
+                        <option value="acl_abuse">ACL Abuse</option>
+                        <option value="domain_admin_escalation">DA Escalation</option>
+                        <option value="lateral_movement">Lateral Movement</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="paths-layout">
+                <div class="paths-list-wrap">
+                    <div id="paths-list" class="paths-list"></div>
+                </div>
+                <div class="path-detail-wrap">
+                    <div id="path-graph-container" class="path-graph-container">
+                        <div class="detail-placeholder" id="path-graph-placeholder">
+                            <div class="placeholder-icon">◆</div>
+                            <p>Select an attack path to visualize</p>
+                        </div>
+                        <div id="cy-container" style="display:none; width:100%; height:100%"></div>
+                    </div>
+                    <div id="path-chain-display" class="path-chain-display" style="display:none"></div>
+                    <div id="path-mitre-display" class="path-mitre-display" style="display:none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── FINDINGS PANEL ── -->
+        <div id="panel-findings" class="panel">
+            <div class="panel-header">
+                <h2>Findings & Risk Panel</h2>
+                <div class="paths-controls">
+                    <select id="finding-filter" onchange="filterFindings()" class="filter-select">
+                        <option value="ALL">All Severities</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="findings-list" class="findings-list"></div>
+        </div>
+
+    </div><!-- /#screen-dashboard -->
+
+    <script src="js/api.js"></script>
+    <script src="js/graph.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

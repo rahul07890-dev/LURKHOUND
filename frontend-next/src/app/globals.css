@@ -1,0 +1,917 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        @apply bg-bg-base text-ink font-sans;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #3c4a42;
+        border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-ink-muted;
+    }
+}
+
+@layer components {
+
+    /* ─── Tactical Grid Background ─── */
+    .tactical-grid {
+        background-image:
+            linear-gradient(rgba(239, 68, 68, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(239, 68, 68, 0.03) 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+
+    /* ─── Scanline Effect ─── */
+    .scanline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #ef4444 50%, transparent 100%);
+        opacity: 0.6;
+        animation: scanlineMove 4s ease-in-out infinite;
+    }
+
+    /* ─── Corner Bracket Reticle Module ─── */
+    /* ── Improvement #5: Card hover lift ── */
+    .module {
+        @apply bg-bg-card rounded-md p-4;
+        position: relative;
+        border: 1px solid #3c4a42;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .module:hover {
+        transform: translateY(-2px);
+        border-color: rgba(239, 68, 68, 0.25);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(239, 68, 68, 0.08);
+    }
+
+    .module::before,
+    .module::after {
+        display: none;
+    }
+
+    /* Additional reticle corners via wrapper */
+    .module-corners {
+        position: relative;
+    }
+
+    .module-corners::before,
+    .module-corners::after {
+        display: none;
+    }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+        @apply fixed left-0 top-0 h-full bg-bg-card border-r flex flex-col z-30 rounded-r-lg;
+        width: 56px;
+        border-color: #3c4a42;
+    }
+
+    /* Nav item (icon-only) */
+    .nav-item {
+        @apply flex items-center justify-center w-10 h-10 rounded-md text-ink-muted transition-all duration-150 cursor-pointer select-none mx-auto;
+    }
+
+    .nav-item:hover {
+        @apply bg-bg-raised text-ink;
+    }
+
+    .nav-item.active {
+        @apply text-accent;
+        background: rgba(239, 68, 68, 0.12);
+        box-shadow: -2px 0 0 0 #ef4444 inset;
+    }
+
+    /* Nav item with label (for sidebar-expanded contexts) */
+    .nav-item-labeled {
+        @apply flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-ink-muted transition-colors duration-150 cursor-pointer select-none;
+    }
+
+    .nav-item-labeled:hover {
+        @apply bg-bg-raised text-ink;
+    }
+
+    .nav-item-labeled.active {
+        @apply text-accent;
+        background: rgba(239, 68, 68, 0.12);
+        border-left: 2px solid #ef4444;
+    }
+
+    /* ─── Cards (with hover lift — Improvement #5) ─── */
+    .card {
+        @apply bg-bg-card rounded-md p-4;
+        border: 1px solid #3c4a42;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(239, 68, 68, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 12px rgba(239, 68, 68, 0.06);
+    }
+
+    .card-sm {
+        @apply bg-bg-raised rounded-sm p-3;
+        border: 1px solid #3c4a42;
+    }
+
+    /* ─── Stat Module ─── */
+    .stat-card {
+        @apply module flex flex-col gap-1;
+    }
+
+    .stat-value {
+        @apply text-3xl font-bold tracking-tight;
+        font-family: 'Space Mono', monospace;
+        color: #ef4444;
+    }
+
+    .stat-label {
+        @apply text-xs font-medium text-ink-muted uppercase;
+        letter-spacing: 0.15em;
+    }
+
+    /* ─── Command Bar ─── */
+    .command-bar {
+        @apply bg-bg-card rounded-md px-4 py-2 flex items-center gap-4;
+        border: 1px solid #3c4a42;
+    }
+
+    /* ─── Buttons ─── */
+    .btn-primary {
+        @apply inline-flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-semibold transition-all duration-150;
+        color: #ef4444;
+        border: 1px solid #ef4444;
+        background: transparent;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .btn-primary:hover {
+        background: #ef4444;
+        color: #0c0e12;
+    }
+
+    .btn-primary:disabled {
+        @apply opacity-50 cursor-not-allowed;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-sm text-sm font-medium text-ink-muted transition-colors duration-150;
+        border: 1px solid #3c4a42;
+    }
+
+    .btn-ghost:hover {
+        @apply text-ink bg-bg-raised;
+    }
+
+    /* ─── Inputs ─── */
+    .input {
+        @apply w-full bg-bg-raised rounded-sm px-3 py-2 text-sm text-ink outline-none transition-all duration-150;
+        border: 1px solid #3c4a42;
+        font-family: 'Space Mono', monospace;
+    }
+
+    .input::placeholder {
+        @apply text-ink-muted;
+    }
+
+    .input:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15), 0 0 12px rgba(239, 68, 68, 0.06);
+    }
+
+    /* ─── Severity Badges (Improvement #4: gradient + glow) ─── */
+    .badge-critical {
+        @apply inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-semibold;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.18) 0%, rgba(185, 28, 28, 0.12) 100%);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.1), 0 0 6px rgba(239, 68, 68, 0.08);
+        animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    .badge-high {
+        @apply inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-semibold;
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.18) 0%, rgba(234, 88, 12, 0.12) 100%);
+        color: #fdba74;
+        border: 1px solid rgba(249, 115, 22, 0.35);
+        box-shadow: inset 0 0 8px rgba(249, 115, 22, 0.08);
+    }
+
+    .badge-medium {
+        @apply inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-semibold;
+        background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(161, 98, 7, 0.1) 100%);
+        color: #fde047;
+        border: 1px solid rgba(234, 179, 8, 0.3);
+        box-shadow: inset 0 0 8px rgba(234, 179, 8, 0.06);
+    }
+
+    .badge-low {
+        @apply inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-semibold;
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        box-shadow: inset 0 0 8px rgba(34, 197, 94, 0.06);
+    }
+
+    /* MITRE badge */
+    .badge-mitre {
+        @apply inline-flex items-center px-1.5 py-0.5 rounded-sm text-xs font-mono font-semibold;
+        background: rgba(239, 68, 68, 0.08);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    /* Tag chip */
+    .tag {
+        @apply inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-bg-raised text-ink-subtle;
+        border: 1px solid #3c4a42;
+    }
+
+    /* ─── Separator ─── */
+    .sep {
+        border-bottom: 1px solid #3c4a42;
+    }
+
+    /* ─── Table ─── */
+    .tbl {
+        @apply w-full text-sm border-collapse;
+    }
+
+    .tbl th {
+        @apply px-3 py-2 text-left text-xs font-semibold text-ink-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        border-bottom: 1px solid #3c4a42;
+    }
+
+    .tbl td {
+        @apply px-3 py-2.5;
+        border-bottom: 1px solid rgba(60, 74, 66, 0.5);
+    }
+
+    .tbl tr:hover td {
+        background: rgba(40, 42, 46, 0.5);
+    }
+
+    /* ─── Kill-chain ─── */
+    .kc-chain {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .kc-step {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+
+    .kc-node {
+        @apply flex flex-col items-center px-4 py-3 rounded-md;
+        border: 2px solid;
+        background: #1a1c20;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .kc-node-type {
+        @apply text-xs font-bold;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        opacity: 0.6;
+    }
+
+    .kc-node-name {
+        @apply text-sm font-bold font-mono mt-1;
+        word-break: break-all;
+        max-width: 130px;
+    }
+
+    .kc-connector {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .kc-connector-line {
+        width: 24px;
+        height: 2px;
+        border-radius: 1px;
+    }
+
+    .kc-connector-arrow {
+        flex-shrink: 0;
+        margin-left: -1px;
+    }
+
+    .kc-edge-label {
+        @apply text-xs font-bold font-mono whitespace-nowrap;
+        padding: 2px 6px;
+        flex-shrink: 0;
+        letter-spacing: 0.05em;
+    }
+
+    /* ─── Scrollable panel ─── */
+    .scrollpane {
+        @apply overflow-y-auto;
+    }
+
+    /* ─── Module Header Label ─── */
+    .module-label {
+        @apply text-xs font-semibold text-ink-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       LANDING PAGE — Two-State Layout
+       ═══════════════════════════════════════════════════════ */
+
+    /* Root container */
+    .landing-root {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: #0c0e12;
+    }
+
+    /* ─── START Button (top-right corner) ─── */
+    .start-btn {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 20px;
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #ffb95f;
+        background: rgba(255, 185, 95, 0.06);
+        border: 1px solid rgba(255, 185, 95, 0.35);
+        border-radius: 2px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow:
+            0 0 12px rgba(255, 185, 95, 0.15),
+            0 0 30px rgba(255, 185, 95, 0.05),
+            inset 0 0 12px rgba(255, 185, 95, 0.03);
+        animation: startBtnPulse 3s ease-in-out infinite;
+    }
+
+    .start-btn:hover {
+        color: #0c0e12;
+        background: rgba(255, 185, 95, 0.9);
+        border-color: #ffb95f;
+        box-shadow:
+            0 0 20px rgba(255, 185, 95, 0.4),
+            0 0 50px rgba(255, 185, 95, 0.15);
+        animation: none;
+        transform: scale(1.05);
+    }
+
+    .start-btn:active {
+        transform: scale(0.97);
+    }
+
+    .start-btn--hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-20px) scale(0.9);
+        transition: all 0.4s ease;
+    }
+
+    @keyframes startBtnPulse {
+        0%, 100% {
+            box-shadow:
+                0 0 12px rgba(255, 185, 95, 0.15),
+                0 0 30px rgba(255, 185, 95, 0.05),
+                inset 0 0 12px rgba(255, 185, 95, 0.03);
+        }
+        50% {
+            box-shadow:
+                0 0 18px rgba(255, 185, 95, 0.25),
+                0 0 45px rgba(255, 185, 95, 0.1),
+                inset 0 0 18px rgba(255, 185, 95, 0.05);
+        }
+    }
+
+    /* ─── Hero Section (Full-screen → Left side) ─── */
+    .hero-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #0c0e12;
+        overflow: hidden;
+        transition:
+            width 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: width, transform;
+    }
+
+    /* After START is clicked — hero shifts left */
+    .hero-section--shifted {
+        width: 75%;
+        transform: scale(0.95);
+    }
+
+    /* ─── Hero Branding ─── */
+    .hero-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding-top: 16px;
+        margin-bottom: 32px;
+        z-index: 2;
+    }
+
+    /* ── Improvement #2: Glitch effect on title ── */
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: #e8e4df;
+        line-height: 1;
+        position: relative;
+        animation: glitchFlicker 5s step-end infinite;
+    }
+
+    .hero-title::before,
+    .hero-title::after {
+        content: 'LURKHOUND';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+    }
+
+    .hero-title::before {
+        color: #ef4444;
+        animation: glitchLeft 5s step-end infinite;
+        clip-path: inset(0 0 60% 0);
+    }
+
+    .hero-title::after {
+        color: #3b82f6;
+        animation: glitchRight 5s step-end infinite;
+        clip-path: inset(40% 0 0 0);
+    }
+
+    .hero-divider {
+        width: 200px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(239,68,68,0.4), transparent);
+    }
+
+    .hero-subtitle {
+        font-size: 11px;
+        font-family: 'Space Mono', monospace;
+        color: rgba(134, 148, 138, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5em;
+    }
+
+    /* ─── Hero Radar Viewport ─── */
+    .hero-radar-viewport {
+        position: relative;
+        width: 380px;
+        height: 380px;
+        z-index: 2;
+    }
+
+    /* ─── Floating Particle Dots ─── */
+    .particle-dot {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(239,68,68,0.8) 0%, rgba(239,68,68,0.2) 50%, transparent 70%);
+        box-shadow: 0 0 8px rgba(239,68,68,0.4), 0 0 20px rgba(239,68,68,0.15);
+        pointer-events: none;
+        z-index: 0;
+        animation: particleDrift ease-in-out infinite;
+    }
+
+    @keyframes particleDrift {
+        0%  { transform: translate(0, 0) scale(1); opacity: var(--tw-opacity, 0.4); }
+        25% { transform: translate(30px, -20px) scale(1.3); opacity: calc(var(--tw-opacity, 0.4) * 1.4); }
+        50% { transform: translate(-15px, -40px) scale(0.8); opacity: calc(var(--tw-opacity, 0.4) * 0.6); }
+        75% { transform: translate(-25px, 15px) scale(1.2); opacity: calc(var(--tw-opacity, 0.4) * 1.2); }
+        100% { transform: translate(0, 0) scale(1); opacity: var(--tw-opacity, 0.4); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CONTROL PANEL — Slides in from right
+       ═══════════════════════════════════════════════════════ */
+    /* ── Improvement #1: Glassmorphic login panel ── */
+    .control-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 25%;
+        height: 100%;
+        background: rgba(17, 19, 23, 0.75);
+        backdrop-filter: blur(20px) saturate(1.2);
+        -webkit-backdrop-filter: blur(20px) saturate(1.2);
+        border-left: 1px solid rgba(239, 68, 68, 0.12);
+        z-index: 50;
+        overflow-y: auto;
+        animation: panelSlideIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5), inset 1px 0 0 rgba(255,255,255,0.03);
+    }
+
+    .control-panel-inner {
+        padding: 40px 40px 32px;
+        opacity: 0;
+        animation: panelFadeContent 0.5s ease 0.35s forwards;
+    }
+
+    @keyframes panelSlideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes panelFadeContent {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ─── Login Input (Improvement #7: focus glow) ─── */
+    .login-input {
+        @apply w-full rounded-sm px-3 py-2.5 text-sm outline-none transition-all duration-300;
+        background: rgba(40, 42, 46, 0.5);
+        border: 1px solid #3c4a42;
+        color: #e2e2e8;
+        font-family: 'Space Mono', monospace;
+        position: relative;
+    }
+
+    .login-input::placeholder {
+        color: rgba(134, 148, 138, 0.6);
+    }
+
+    .login-input:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15), 0 0 16px rgba(239, 68, 68, 0.12), 0 4px 24px rgba(239, 68, 68, 0.06);
+        background: rgba(40, 42, 46, 0.7);
+    }
+
+    .login-input:focus + .login-focus-line,
+    .login-input:focus ~ .login-focus-line {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+
+    .login-focus-line {
+        position: absolute;
+        bottom: 0;
+        left: 10%;
+        width: 80%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #ef4444, transparent);
+        transform: scaleX(0);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    /* Login label (Improvement #7: accent on focus) */
+    .login-label {
+        @apply block text-xs font-semibold mb-1.5;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #86948a;
+        transition: color 0.2s ease;
+    }
+
+    .login-input:focus ~ .login-label,
+    div:focus-within > .login-label {
+        color: #ef4444;
+    }
+
+    /* ── Submit button (Improvement #3: animated border glow) ── */
+    .login-submit-btn {
+        @apply w-full inline-flex items-center justify-center gap-2 py-3 rounded-sm text-sm font-bold transition-all duration-200;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #ef4444;
+        border: 1px solid transparent;
+        background: linear-gradient(#111317, #111317) padding-box,
+                    conic-gradient(from var(--btn-angle, 0deg), #ef4444, #f97316, #ef4444, #7f1d1d, #ef4444) border-box;
+        animation: rotateBorderAngle 3s linear infinite;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .login-submit-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(239,68,68,0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .login-submit-btn:hover {
+        background: linear-gradient(rgba(239,68,68,0.9), rgba(239,68,68,0.9)) padding-box,
+                    conic-gradient(from var(--btn-angle, 0deg), #ef4444, #fbbf24, #ef4444) border-box;
+        color: #0c0e12;
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.15);
+    }
+
+    .login-submit-btn:active {
+        transform: scale(0.98);
+    }
+
+    .login-submit-btn:disabled {
+        animation: rotateBorderAngle 2s linear infinite;
+        @apply opacity-50 cursor-not-allowed;
+        transform: none;
+    }
+
+    /* Security notice */
+    .login-notice {
+        @apply flex items-start gap-2.5 p-3 rounded-sm mb-6;
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+    }
+
+    /* Threat indicator */
+    .threat-indicator {
+        @apply inline-flex items-center gap-2 px-3 py-1 rounded-sm text-xs font-bold;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .threat-standby {
+        color: #ffb95f;
+        background: rgba(255, 185, 95, 0.1);
+        border: 1px solid rgba(255, 185, 95, 0.3);
+    }
+
+    .threat-critical {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Pulsing dot */
+    .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .pulse-dot-red {
+        background: #ef4444;
+        box-shadow: 0 0 6px #ef4444;
+    }
+
+    .pulse-dot-amber {
+        background: #ffb95f;
+        box-shadow: 0 0 6px #ffb95f;
+    }
+
+    /* ─── Status bar (Improvement #6: data ticker) ─── */
+    .status-bar {
+        @apply flex items-center justify-between px-4 py-1 text-xs font-mono text-ink-muted;
+        background: #111317;
+        border-top: 1px solid #3c4a42;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .status-bar::before {
+        content: '4F 70 65 72 61 74 6F 72 // 41 44 20 4D 61 70 70 65 72 // 4C 75 72 6B 48 6F 75 6E 64 // AD_RECON_ACTIVE // SEC_LINK_EST';
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        color: rgba(134, 148, 138, 0.08);
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        animation: tickerScroll 40s linear infinite;
+        pointer-events: none;
+    }
+}
+
+/* ─── Keyframes ─── */
+@keyframes scanlineMove {
+    0%, 100% { transform: scaleX(0); opacity: 0; }
+    10% { opacity: 0.6; }
+    50% { transform: scaleX(1); opacity: 0.6; }
+    90% { opacity: 0.6; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeIn 0.15s ease-out; }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+.animate-slide-in { animation: slideIn 0.25s ease-out; }
+
+/* ── Light Theme ── */
+[data-theme="light"] {
+    --bg-base: #f0f2f5;
+    --bg-raised: #ffffff;
+    --bg-card: #ffffff;
+    --bg-border: #d1d5db;
+    --ink: #1e293b;
+    --ink-subtle: #475569;
+    --ink-muted: #94a3b8;
+    --accent: #dc2626;
+}
+
+[data-theme="light"] body { background: var(--bg-base); color: var(--ink); }
+[data-theme="light"] .sidebar { background: var(--bg-card); border-color: var(--bg-border); }
+[data-theme="light"] .card, [data-theme="light"] .module { background: var(--bg-card); border-color: var(--bg-border); }
+[data-theme="light"] .input { background: var(--bg-raised); border-color: var(--bg-border); color: var(--ink); }
+[data-theme="light"] .nav-item { color: var(--ink-subtle); }
+[data-theme="light"] .nav-item.active, [data-theme="light"] .nav-item:hover { background: rgba(220,38,38,0.06); color: var(--ink); }
+[data-theme="light"] .tactical-grid { background-image: none; }
+[data-theme="light"] .command-bar { background: var(--bg-card); border-color: var(--bg-border); }
+[data-theme="light"] .status-bar { background: var(--bg-card); border-color: var(--bg-border); color: var(--ink-muted); }
+[data-theme="light"] .tbl thead th { color: var(--ink-muted); border-color: var(--bg-border); }
+[data-theme="light"] .tbl tbody td { border-color: var(--bg-border); }
+
+/* ── Improvement #8: Skeleton Shimmer Sweep ── */
+.skeleton-pulse {
+    min-height: 8px;
+    background: linear-gradient(
+        110deg,
+        var(--bg-card, #1e1e22) 30%,
+        rgba(239, 68, 68, 0.06) 50%,
+        var(--bg-card, #1e1e22) 70%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Toast Slide Up ── */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-slideUp { animation: slideUp 0.3s ease-out; }
+
+/* ── Counter Animate ── */
+@keyframes countUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-countUp { animation: countUp 0.6s ease-out both; }
+
+/* ── Improvement #2: Glitch Keyframes ── */
+@keyframes glitchFlicker {
+    0%, 92%, 100% { opacity: 1; }
+    93% { opacity: 0.8; transform: translate(-2px, 0); }
+    94% { opacity: 1; transform: translate(1px, 0); }
+    95% { opacity: 0.9; transform: translate(0, 1px); }
+    96% { opacity: 1; transform: translate(0, 0); }
+}
+
+@keyframes glitchLeft {
+    0%, 92%, 96%, 100% { opacity: 0; transform: translate(0); }
+    93% { opacity: 0.7; transform: translate(-3px, 0); }
+    94% { opacity: 0; }
+    95% { opacity: 0.5; transform: translate(2px, 1px); }
+}
+
+@keyframes glitchRight {
+    0%, 92%, 96%, 100% { opacity: 0; transform: translate(0); }
+    93% { opacity: 0.5; transform: translate(3px, 0); }
+    94% { opacity: 0; }
+    95% { opacity: 0.7; transform: translate(-2px, -1px); }
+}
+
+/* ── Improvement #3: Rotating Border Angle ── */
+@property --btn-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes rotateBorderAngle {
+    to { --btn-angle: 360deg; }
+}
+
+/* ── Improvement #4: Badge Pulse ── */
+@keyframes badgePulse {
+    0%, 100% { box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.1), 0 0 6px rgba(239, 68, 68, 0.08); }
+    50% { box-shadow: inset 0 0 12px rgba(239, 68, 68, 0.18), 0 0 10px rgba(239, 68, 68, 0.15); }
+}
+
+/* ── Improvement #6: Status Bar Ticker ── */
+@keyframes tickerScroll {
+    from { transform: translateY(-50%) translateX(0); }
+    to { transform: translateY(-50%) translateX(-200%); }
+}
+
+/* ── Responsive: Mobile ── */
+@media (max-width: 768px) {
+    .sidebar { 
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        width: 100% !important;
+        height: 56px !important;
+        flex-direction: row !important;
+        border-right: none !important;
+        border-top: 1px solid var(--bg-border);
+        z-index: 50;
+    }
+    .sidebar > div { flex-direction: row !important; overflow-x: auto; }
+    .dashboard-main { margin-left: 0 !important; padding-bottom: 60px; }
+    .tbl { display: block; overflow-x: auto; }
+}
+
+/* ── Progress Bar ── */
+.progress-bar-fill {
+    transition: width 0.4s ease-out;
+    background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #22c55e 100%);
+}

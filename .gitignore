@@ -1,0 +1,60 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.venv/
+venv/
+env/
+
+# ========================
+# Node / Next.js
+# ========================
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.*
+!.env.example
+
+# ========================
+# Data & Databases
+# ========================
+data/*.db
+*.sqlite3
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ========================
+# OS files
+# ========================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ========================
+# Logs & Misc
+# ========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
