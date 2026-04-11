@@ -10,7 +10,7 @@
 
 **Active Directory Attack-Path Discovery Mapper**
 
-A Windows-hosted, web-based security analysis dashboard for post-compromise AD reconnaissance. LURKHOUND performs LDAP-based enumeration, builds a permission graph, discovers privilege escalation attack paths, detects misconfigurations, and generates PowerShell remediation guidance — all tagged with MITRE ATT&CK techniques.
+A Windows-hosted, web-based security analysis dashboard for post-compromise AD reconnaissance. LURKHOUND performs LDAP-based enumeration, builds a permission graph, discovers privilege escalation attack paths, detects misconfigurations, and generates PowerShell remediation guidance, all tagged with MITRE ATT&CK techniques.
 
 ---
 
