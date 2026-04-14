@@ -29,8 +29,27 @@ import type {
 // ── Session ID storage (in-memory, not localStorage) ─────────────────────────
 
 let _sessionId: string | null = null
-export const getSessionId = () => _sessionId
-export const clearSessionId = () => { _sessionId = null }
+export const getSessionId = () => {
+    if (_sessionId) return _sessionId
+    if (typeof window !== 'undefined') {
+        const stored = sessionStorage.getItem('lurkhound_session_id')
+        if (stored) _sessionId = stored
+    }
+    return _sessionId
+}
+
+export const setSessionId = (id: string | null) => {
+    _sessionId = id
+    if (typeof window !== 'undefined') {
+        if (id) {
+            sessionStorage.setItem('lurkhound_session_id', id)
+        } else {
+            sessionStorage.removeItem('lurkhound_session_id')
+        }
+    }
+}
+
+export const clearSessionId = () => { setSessionId(null) }
 
 // ── Core fetch ────────────────────────────────────────────────────────────────
 
@@ -60,16 +79,18 @@ export async function login(payload: {
         '/authenticate',
         { method: 'POST', body: JSON.stringify(payload) }
     )
-    _sessionId = auth.session_id
+    setSessionId(auth.session_id)
 
     // Step 2: fetch all data in one bundle request
-    const data = await apiFetch<Omit<SessionData, 'session_id'>>(`/data/${_sessionId}`)
+    const currentId = getSessionId()
+    const data = await apiFetch<Omit<SessionData, 'session_id'>>(`/data/${currentId}`)
 
-    return { session_id: _sessionId, ...data }
+    return { session_id: currentId!, ...data }
 }
 
 export async function logout(): Promise<void> {
-    if (_sessionId) {
+    const currentId = getSessionId();
+    if (currentId) {
         await apiFetch(`/logout/${_sessionId}`, { method: 'POST' }).catch(() => { })
         clearSessionId()
     }

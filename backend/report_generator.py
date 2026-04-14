@@ -113,7 +113,7 @@ tr:hover td{{background:#1e293b50}}
 </head>
 <body>
 <div class="container">
-<h1>🛡️ AD Security Assessment Report</h1>
+<h1>AD Security Assessment Report</h1>
 <p class="meta">{domain} &middot; {dc_ip} &middot; Generated {ts}</p>
 
 <div class="risk-gauge">

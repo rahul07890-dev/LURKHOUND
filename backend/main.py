@@ -483,15 +483,23 @@ async def get_report(session_id: str, format: str = Query("html")):
         try:
             from weasyprint import HTML as WeasyprintHTML
             pdf_bytes = WeasyprintHTML(string=html_content).write_pdf()
-            from fastapi.responses import Response
-            return Response(
-                content=pdf_bytes,
-                media_type="application/pdf",
-                headers={"Content-Disposition": f'attachment; filename="ad_security_report_{session.get("summary", {}).get("domain", "report")}.pdf"'}
-            )
-        except ImportError:
-            # Fallback: serve HTML with PDF note
-            raise HTTPException(status_code=501, detail="PDF export requires 'weasyprint'. Install with: pip install weasyprint")
+        except (ImportError, OSError):
+            # Fallback to xhtml2pdf on Windows where weasyprint fails on GTK binaries
+            try:
+                from xhtml2pdf import pisa
+                from io import BytesIO
+                result = BytesIO()
+                pisa.CreatePDF(BytesIO(html_content.encode('utf-8')), dest=result)
+                pdf_bytes = result.getvalue()
+            except ImportError:
+                raise HTTPException(status_code=501, detail="PDF export requires 'xhtml2pdf' on Windows. Install with: pip install xhtml2pdf")
+                
+        from fastapi.responses import Response
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="ad_security_report_{session.get("summary", {}).get("domain", "report")}.pdf"'}
+        )
     else:
         html_content = generate_html_report(session)
         return HTMLResponse(
