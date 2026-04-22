@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { SessionProvider } from '@/context/SessionContext'
-import { headers, cookies } from 'next/headers'
+import { headers } from 'next/headers'
 
 export const metadata: Metadata = {
     title: 'LurkHound',
@@ -13,15 +13,20 @@ import { Suspense } from 'react'
 async function ConfigData() {
     // Next.js 16 Async Request API integration
     const requestHeaders = await headers()
-    const requestCookies = await cookies()
     const theme = requestHeaders.get('x-theme') || 'dark'
     
-    // Simulate Cache Directive implementation
-    async function getCachedConfig() {
+    // Real Cache Directive implementation for expensive static data
+    async function getCachedMitreData() {
         'use cache'
-        return { version: "v1.2.0", defaultTheme: theme }
+        try {
+            const res = await fetch('http://localhost:8000/api/mitre-techniques');
+            if (res.ok) return await res.json();
+        } catch (e) {
+            // Backend might not be running during build
+        }
+        return { version: "v1.2.0", defaultTheme: theme };
     }
-    await getCachedConfig()
+    await getCachedMitreData()
     return null
 }
 

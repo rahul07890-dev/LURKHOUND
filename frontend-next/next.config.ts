@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
     async rewrites() {
         return [
             // Proxy all /api/* calls to the Python FastAPI backend
@@ -14,10 +15,10 @@ const nextConfig = {
             },
         ]
     },
-    reactCompiler: true,
     experimental: {
+        reactCompiler: true,
         cacheComponents: true,
     },
 }
 
-module.exports = nextConfig
+export default nextConfig

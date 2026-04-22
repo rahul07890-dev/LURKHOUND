@@ -32,7 +32,7 @@
             "dn": "CN=TONY STARK,CN=USERS,DC=MARVEL,DC=LOCAL",
             "sam_account_name": "TSTARK",
             "display_name": "Tony Stark",
-            "description": "Iron Man — Engineering Lead",
+            "description": "Iron Man \u00e2\u20ac\u201d Engineering Lead",
             "object_type": "User",
             "sid": "S-1-5-21-1234567890-1234567890-1234567890-1103",
             "member_of": [
@@ -52,7 +52,7 @@
             "dn": "CN=PETER PARKER,CN=USERS,DC=MARVEL,DC=LOCAL",
             "sam_account_name": "PPARKER",
             "display_name": "Peter Parker",
-            "description": "Spider-Man — Junior Developer",
+            "description": "Spider-Man \u00e2\u20ac\u201d Junior Developer",
             "object_type": "User",
             "sid": "S-1-5-21-1234567890-1234567890-1234567890-1104",
             "member_of": [
@@ -72,7 +72,7 @@
             "dn": "CN=NATASHA ROMANOFF,CN=USERS,DC=MARVEL,DC=LOCAL",
             "sam_account_name": "NROMANOFF",
             "display_name": "Natasha Romanoff",
-            "description": "Black Widow — Security Analyst",
+            "description": "Black Widow \u00e2\u20ac\u201d Security Analyst",
             "object_type": "User",
             "sid": "S-1-5-21-1234567890-1234567890-1234567890-1105",
             "member_of": [
@@ -93,7 +93,7 @@
             "dn": "CN=BRUCE BANNER,CN=USERS,DC=MARVEL,DC=LOCAL",
             "sam_account_name": "BBANNER",
             "display_name": "Bruce Banner",
-            "description": "Hulk — Research Service Account",
+            "description": "Hulk \u00e2\u20ac\u201d Research Service Account",
             "object_type": "User",
             "sid": "S-1-5-21-1234567890-1234567890-1234567890-1106",
             "member_of": [
@@ -116,7 +116,7 @@
             "dn": "CN=STEVE ROGERS,CN=USERS,DC=MARVEL,DC=LOCAL",
             "sam_account_name": "SROGERS",
             "display_name": "Steve Rogers",
-            "description": "Captain America — HR Manager",
+            "description": "Captain America \u00e2\u20ac\u201d HR Manager",
             "object_type": "User",
             "sid": "S-1-5-21-1234567890-1234567890-1234567890-1107",
             "member_of": [
@@ -136,7 +136,7 @@
             "dn": "CN=WANDA MAXIMOFF,CN=USERS,DC=MARVEL,DC=LOCAL",
             "sam_account_name": "WMAXIMOFF",
             "display_name": "Wanda Maximoff",
-            "description": "Scarlet Witch — Disabled account",
+            "description": "Scarlet Witch \u00e2\u20ac\u201d Disabled account",
             "object_type": "User",
             "sid": "S-1-5-21-1234567890-1234567890-1234567890-1108",
             "member_of": [
@@ -338,6 +338,272 @@
                 "is_privileged": true,
                 "is_admin": false
             }
+        },
+        {
+            "dn": "CN=DummyGroup11,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup11",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup12,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup12",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup13,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup13",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup14,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup14",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup15,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup15",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup16,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup16",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup17,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup17",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup18,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup18",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup19,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup19",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup20,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup20",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup21,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup21",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup22,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup22",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup23,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup23",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup24,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup24",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup25,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup25",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup26,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup26",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup27,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup27",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup28,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup28",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup29,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup29",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup30,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup30",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup31,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup31",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup32,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup32",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup33,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup33",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup34,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup34",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup35,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup35",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup36,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup36",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup37,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup37",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup38,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup38",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup39,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup39",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup40,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup40",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup41,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup41",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup42,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup42",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup43,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup43",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup44,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup44",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup45,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup45",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup46,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup46",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup47,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup47",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
+        },
+        {
+            "dn": "CN=DummyGroup48,CN=Users,DC=MARVEL,DC=local",
+            "sam_account_name": "DummyGroup48",
+            "description": "Dummy group for lab",
+            "members": [],
+            "attributes": {}
         }
     ],
     "computers": [

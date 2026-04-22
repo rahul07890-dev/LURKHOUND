@@ -446,7 +446,7 @@ export default function LoginPage() {
             const wsUrl = window.location.origin.replace(/^http/, 'ws') + '/api/ws/enumerate';
             // Using direct ws path to backend based on rewrites won't work perfectly for ws with Next.js API Routes out-of-the-box,
             // so we'll construct the websocket pointing straight to the FastAPI backend.
-            const backendWsUrl = 'ws://localhost:8000/ws/enumerate';
+            const backendWsUrl = `ws://${window.location.hostname}:8000/ws/enumerate`;
             
             const ws = new WebSocket(backendWsUrl);
             

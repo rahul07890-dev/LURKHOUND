@@ -181,7 +181,6 @@ MITRE_TECHNIQUES = {
         "url": "https://attack.mitre.org/techniques/T1021/006/",
         "description": "Adversaries may use Valid Accounts to interact with remote systems using Windows Remote Management (WinRM)."
     },
-    # NOTE: T1484.001 already defined above (line 30); duplicate removed during audit.
     "T1558.004": {
         "id": "T1558.004",
         "name": "Steal or Forge Kerberos Tickets: AS-REP Roasting",

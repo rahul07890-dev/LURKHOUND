@@ -386,6 +386,13 @@ async def logout(session_id: str):
     return {"success": True, "message": "Session cleared"}
 
 
+@app.get("/api/mitre-techniques")
+async def get_mitre_techniques():
+    """Get the full MITRE technique lookup table."""
+    from mitre_mapping import MITRE_TECHNIQUES
+    return MITRE_TECHNIQUES
+
+
 # ── Phase 2: Scan History (Feature 2) ─────────────────────────────────────────
 
 @app.get("/api/scans")

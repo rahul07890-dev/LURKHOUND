@@ -14,6 +14,7 @@ except ImportError:
 API_PORT = int(os.getenv("API_PORT", "8000"))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info").lower()
 SESSION_TTL_MINUTES = int(os.getenv("SESSION_TTL_MINUTES", "30"))
+LDAP_TLS_VERIFY = os.getenv("LDAP_TLS_VERIFY", "false").lower() == "true"
 
 CORS_ORIGINS = [
     o.strip()
