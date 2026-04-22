@@ -19,7 +19,9 @@ from mitre_mapping import (
 
 logger = logging.getLogger(__name__)
 
-MAX_PATH_DEPTH = 6      # Max hops in BFS/DFS traversal
+import os
+
+MAX_PATH_DEPTH = int(os.getenv("MAX_PATH_DEPTH", 6))      # Max hops in BFS/DFS traversal
 MAX_PATHS_PER_PAIR = 1  # Only keep the shortest path per source→target pair
 
 ESCALATION_EDGE_TYPES = {

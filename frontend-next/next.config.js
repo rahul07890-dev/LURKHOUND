@@ -14,6 +14,10 @@ const nextConfig = {
             },
         ]
     },
+    reactCompiler: true,
+    experimental: {
+        cacheComponents: true,
+    },
 }
 
 module.exports = nextConfig

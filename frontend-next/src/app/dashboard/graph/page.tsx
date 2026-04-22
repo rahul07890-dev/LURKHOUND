@@ -348,10 +348,10 @@ export default function GraphPage() {
                 localCy.on('mouseout', 'node', () => { if (containerRef.current) containerRef.current.style.cursor = 'default' })
                 cyRef.current = localCy
 
-                // Hide orphan nodes (0 edges) by default
+                // Remove orphan nodes by default and cache them
                 const orphans = localCy.nodes().filter((n: any) => n.degree(false) === 0)
-                orphans.addClass('orphan-hidden')
-                orphans.style('display', 'none')
+                // @ts-ignore
+                localCy._orphansCache = localCy.remove(orphans)
             } catch (err) { console.error('[Graph] init:', err) }
         }).catch(err => console.error('[Graph] import:', err))
 
@@ -436,11 +436,20 @@ export default function GraphPage() {
                         if (!cyRef.current) return
                         const next = !hideOrphans
                         setHideOrphans(next)
-                        const orphans = cyRef.current.nodes().filter((n: any) => n.degree(false) === 0)
                         if (next) {
-                            orphans.style('display', 'none')
+                            const orphans = cyRef.current.nodes().filter((n: any) => n.degree(false) === 0)
+                            // @ts-ignore
+                            if (!cyRef.current._orphansCache) cyRef.current._orphansCache = cyRef.current.collection()
+                            // @ts-ignore
+                            cyRef.current._orphansCache = cyRef.current._orphansCache.union(cyRef.current.remove(orphans))
                         } else {
-                            orphans.style('display', 'element')
+                            // @ts-ignore
+                            if (cyRef.current._orphansCache) {
+                                // @ts-ignore
+                                cyRef.current.add(cyRef.current._orphansCache)
+                                // @ts-ignore
+                                cyRef.current._orphansCache = null
+                            }
                         }
                     }} className="btn-ghost py-1 gap-1.5">
                         {hideOrphans ? <Eye size={12} /> : <EyeOff size={12} />}

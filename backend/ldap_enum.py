@@ -103,9 +103,9 @@ def enumerate_users(conn: Connection, base_dn: str) -> List[Dict[str, Any]]:
     try:
         conn.search(
             search_base=base_dn,
-            search_filter=FILTER_ALL_USERS,
+            search_filter=FILTER_USERS,
             search_scope=SUBTREE,
-            attributes=USER_ATTRIBUTES
+            attributes=USER_ATTRIBUTES, paged_size=1000
         )
         for entry in conn.entries:
             user = {
@@ -139,7 +139,7 @@ def enumerate_groups(conn: Connection, base_dn: str) -> List[Dict[str, Any]]:
             search_base=base_dn,
             search_filter=FILTER_GROUPS,
             search_scope=SUBTREE,
-            attributes=GROUP_ATTRIBUTES
+            attributes=GROUP_ATTRIBUTES, paged_size=1000
         )
         for entry in conn.entries:
             group = {
@@ -171,7 +171,7 @@ def enumerate_computers(conn: Connection, base_dn: str) -> List[Dict[str, Any]]:
             search_base=base_dn,
             search_filter=FILTER_COMPUTERS,
             search_scope=SUBTREE,
-            attributes=COMPUTER_ATTRIBUTES
+            attributes=COMPUTER_ATTRIBUTES, paged_size=1000
         )
         raw_count = len(conn.entries)
         logger.info(f"Computer LDAP query returned {raw_count} raw entries")
@@ -219,8 +219,7 @@ def enumerate_gpos(conn: Connection, base_dn: str) -> List[Dict[str, Any]]:
             search_base=base_dn,
             search_filter="(objectClass=groupPolicyContainer)",
             search_scope=SUBTREE,
-            attributes=["displayName", "distinguishedName", "gPCFileSysPath",
-                        "flags", "versionNumber", "whenCreated", "whenChanged"]
+            attributes=["displayName", "distinguishedName", "gPCFileSysPath", "flags", "versionNumber", "whenCreated", "whenChanged"], paged_size=1000
         )
         for entry in conn.entries:
             gpos.append({
@@ -244,7 +243,7 @@ def enumerate_ous(conn: Connection, base_dn: str) -> List[Dict[str, Any]]:
             search_base=base_dn,
             search_filter="(objectClass=organizationalUnit)",
             search_scope=SUBTREE,
-            attributes=["name", "distinguishedName", "gPLink", "description"]
+            attributes=["name", "distinguishedName", "gPLink", "description"], paged_size=1000
         )
         for entry in conn.entries:
             gp_link = _safe_str(entry.gPLink.value) if hasattr(entry, 'gPLink') and entry.gPLink.value else ""
@@ -277,9 +276,7 @@ def enumerate_trusts(conn: Connection, base_dn: str) -> List[Dict[str, Any]]:
             search_base=base_dn,
             search_filter="(objectClass=trustedDomain)",
             search_scope=SUBTREE,
-            attributes=["name", "distinguishedName", "trustDirection",
-                        "trustType", "trustAttributes", "securityIdentifier",
-                        "flatName", "trustPartner"]
+            attributes=["name", "distinguishedName", "trustDirection", "trustType", "trustAttributes", "securityIdentifier", "flatName", "trustPartner"], paged_size=1000
         )
         for entry in conn.entries:
             td = int(entry.trustDirection.value) if hasattr(entry, 'trustDirection') and entry.trustDirection.value else 0
@@ -312,9 +309,7 @@ def enumerate_password_policies(conn: Connection, base_dn: str) -> List[Dict[str
             search_base=base_dn,
             search_filter="(objectClass=domain)",
             search_scope=SUBTREE,
-            attributes=["minPwdLength", "pwdHistoryLength", "maxPwdAge",
-                        "minPwdAge", "lockoutThreshold", "lockoutDuration",
-                        "lockoutObservationWindow", "pwdProperties"]
+            attributes=["minPwdLength", "pwdHistoryLength", "maxPwdAge", "minPwdAge", "lockoutThreshold", "lockoutDuration", "lockoutObservationWindow", "pwdProperties"], paged_size=1000
         )
         if conn.entries:
             e = conn.entries[0]
@@ -336,10 +331,7 @@ def enumerate_password_policies(conn: Connection, base_dn: str) -> List[Dict[str
             search_base=base_dn,
             search_filter="(objectClass=msDS-PasswordSettings)",
             search_scope=SUBTREE,
-            attributes=["name", "msDS-PasswordSettingsPrecedence",
-                        "msDS-MinimumPasswordLength", "msDS-PasswordHistoryLength",
-                        "msDS-LockoutThreshold", "msDS-PasswordComplexityEnabled",
-                        "msDS-PSOAppliesTo", "distinguishedName"]
+            attributes=["name", "msDS-PasswordSettingsPrecedence", "msDS-MinimumPasswordLength", "msDS-PasswordHistoryLength", "msDS-LockoutThreshold", "msDS-PasswordComplexityEnabled", "msDS-PSOAppliesTo", "distinguishedName"], paged_size=1000
         )
         for entry in conn.entries:
             applies_to = []
@@ -375,8 +367,7 @@ def enumerate_acls(conn: Connection, base_dn: str, objects: List[Dict]) -> List[
             search_base=base_dn,
             search_filter="(|(objectClass=user)(objectClass=group)(objectClass=computer))",
             search_scope=SUBTREE,
-            attributes=["distinguishedName", "sAMAccountName", "objectSid", "nTSecurityDescriptor"],
-            controls=[("1.2.840.113556.1.4.801", True, b"\x30\x03\x02\x01\x04")]  # DACL control
+            attributes=["distinguishedName", "sAMAccountName", "objectSid", "nTSecurityDescriptor"], paged_size=1000, controls=[("1.2.840.113556.1.4.801", True, b"\x30\x03\x02\x01\x04")]  # DACL control
         )
 
         for entry in conn.entries:
@@ -498,3 +489,4 @@ def run_full_enumeration(conn: Connection, base_dn: str) -> Dict[str, Any]:
         "password_policies": password_policies,
         "base_dn": base_dn
     }
+

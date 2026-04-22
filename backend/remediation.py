@@ -257,7 +257,198 @@ REMEDIATION_TEMPLATES = {
             "LAPS prevents lateral movement by ensuring each machine has a unique, "
             "randomly generated local admin password that changes automatically."
         )
-    }
+    },
+    "asrep_roastable": {
+        "explanation": (
+            "Accounts with Kerberos pre-authentication disabled are vulnerable to AS-REP Roasting. "
+            "An attacker can request an AS-REP for these accounts without knowing the password, "
+            "then crack the encrypted portion offline to recover the plaintext password."
+        ),
+        "fix_guidance": (
+            "1. Enable Kerberos pre-authentication for all user accounts.\n"
+            "2. Audit which accounts have 'Do not require Kerberos preauthentication' checked.\n"
+            "3. If pre-auth must remain disabled (rare), enforce a 25+ character password.\n"
+            "4. Monitor for Event ID 4768 with preauth type 0."
+        ),
+        "powershell": (
+            "# List all AS-REP Roastable accounts\n"
+            "Get-ADUser -Filter {{DoesNotRequirePreAuth -eq $true}} -Properties DoesNotRequirePreAuth |\n"
+            "  Select Name, SamAccountName, DoesNotRequirePreAuth\n\n"
+            "# Enable pre-authentication for a specific account\n"
+            "Set-ADAccountControl -Identity '{source}' -DoesNotRequirePreAuth $false\n"
+            "Write-Host \"Pre-authentication enabled for {source}\""
+        ),
+        "risk_reduction": (
+            "Eliminates the ability to request offline-crackable AS-REP tickets. "
+            "With pre-auth enabled, an attacker must know the password to request a TGT."
+        )
+    },
+    "weak_password_policy": {
+        "explanation": (
+            "The domain password policy does not meet security best practices. "
+            "Weak password policies allow users to choose short or simple passwords "
+            "that are easily cracked via brute force or dictionary attacks."
+        ),
+        "fix_guidance": (
+            "1. Set minimum password length to 14+ characters.\n"
+            "2. Enable password complexity requirements.\n"
+            "3. Set maximum password age to 90 days or less.\n"
+            "4. Configure account lockout after 5 failed attempts.\n"
+            "5. Consider implementing Fine-Grained Password Policies (FGPP) for privileged accounts."
+        ),
+        "powershell": (
+            "# View current domain password policy\n"
+            "Get-ADDefaultDomainPasswordPolicy | Select MinPasswordLength, MaxPasswordAge, "
+            "ComplexityEnabled, LockoutThreshold, PasswordHistoryCount\n\n"
+            "# Set a stronger policy\n"
+            "Set-ADDefaultDomainPasswordPolicy -Identity '{target}' "
+            "-MinPasswordLength 14 -ComplexityEnabled $true "
+            "-MaxPasswordAge '90.00:00:00' -LockoutThreshold 5 "
+            "-LockoutDuration '00:30:00' -LockoutObservationWindow '00:30:00'"
+        ),
+        "risk_reduction": (
+            "Strong password policies make brute-force and dictionary attacks infeasible. "
+            "A 14-character complex password takes centuries to crack with current hardware."
+        )
+    },
+    "stale_computer": {
+        "explanation": (
+            "Computer accounts that have not authenticated to the domain in over 90 days "
+            "may be abandoned or decommissioned machines. These stale accounts can be abused "
+            "for domain persistence or to impersonate legitimate systems."
+        ),
+        "fix_guidance": (
+            "1. Identify all computer accounts with no recent logon activity.\n"
+            "2. Verify with system administrators whether machines are still in use.\n"
+            "3. Disable stale computer accounts first (30-day quarantine).\n"
+            "4. Delete confirmed decommissioned accounts after the quarantine period.\n"
+            "5. Implement automated cleanup via scheduled scripts."
+        ),
+        "powershell": (
+            "# Find computers not logged on in 90+ days\n"
+            "$threshold = (Get-Date).AddDays(-90)\n"
+            "Get-ADComputer -Filter {{LastLogonDate -lt $threshold}} "
+            "-Properties LastLogonDate, OperatingSystem |\n"
+            "  Select Name, LastLogonDate, OperatingSystem, Enabled |\n"
+            "  Sort LastLogonDate\n\n"
+            "# Disable a stale computer account\n"
+            "Disable-ADAccount -Identity '{source}$'\n"
+            "Write-Host \"Disabled stale computer account: {source}\""
+        ),
+        "risk_reduction": (
+            "Removes orphaned machine identities that attackers can leverage for "
+            "domain persistence, lateral movement, or Kerberos ticket abuse."
+        )
+    },
+    "stale_disabled_member": {
+        "explanation": (
+            "Disabled user accounts that remain members of security groups (especially "
+            "privileged groups) represent a hygiene issue. If a disabled account is "
+            "accidentally re-enabled, it immediately inherits all group permissions."
+        ),
+        "fix_guidance": (
+            "1. Remove disabled accounts from all security groups.\n"
+            "2. Move disabled accounts to a dedicated 'Disabled Users' OU.\n"
+            "3. Implement an automated offboarding process that strips group memberships.\n"
+            "4. Review disabled accounts quarterly for deletion eligibility."
+        ),
+        "powershell": (
+            "# Find disabled users still in groups\n"
+            "Get-ADUser -Filter {{Enabled -eq $false}} -Properties MemberOf |\n"
+            "  Where-Object {{$_.MemberOf.Count -gt 0}} |\n"
+            "  Select Name, SamAccountName, @{{N='Groups';E={{$_.MemberOf.Count}}}}\n\n"
+            "# Remove a disabled user from all groups\n"
+            "$user = Get-ADUser '{source}' -Properties MemberOf\n"
+            "$user.MemberOf | ForEach-Object {{ Remove-ADGroupMember -Identity $_ -Members '{source}' -Confirm:$false }}\n"
+            "Write-Host \"Removed {source} from all groups\""
+        ),
+        "risk_reduction": (
+            "Prevents accidental privilege restoration if a disabled account is re-enabled. "
+            "Clean group memberships enforce the principle of least privilege."
+        )
+    },
+    "empty_security_group": {
+        "explanation": (
+            "Security groups with zero members serve no access control purpose but add "
+            "complexity to the directory. They may indicate abandoned projects or "
+            "misconfigured delegation, and can be confusing during security audits."
+        ),
+        "fix_guidance": (
+            "1. Review each empty security group to determine its intended purpose.\n"
+            "2. Consult with application owners before deletion.\n"
+            "3. Delete confirmed unnecessary groups.\n"
+            "4. Convert groups that are intentionally empty (placeholders) to distribution groups if applicable."
+        ),
+        "powershell": (
+            "# Find empty security groups\n"
+            "Get-ADGroup -Filter {{GroupCategory -eq 'Security'}} -Properties Members |\n"
+            "  Where-Object {{$_.Members.Count -eq 0}} |\n"
+            "  Select Name, SamAccountName, GroupScope, DistinguishedName\n\n"
+            "# Remove an empty group after verification\n"
+            "Remove-ADGroup -Identity '{source}' -Confirm:$false\n"
+            "Write-Host \"Removed empty security group: {source}\""
+        ),
+        "risk_reduction": (
+            "Reduces directory complexity and eliminates potential targets for "
+            "group membership injection attacks via ACL abuse."
+        )
+    },
+    "shadow_admin": {
+        "explanation": (
+            "Shadow admins are non-admin accounts that have indirect administrative control "
+            "via ACL permissions (GenericAll, WriteDACL, WriteOwner) on privileged groups or "
+            "user objects. These accounts bypass normal admin auditing and monitoring."
+        ),
+        "fix_guidance": (
+            "1. Identify all accounts with write permissions on privileged groups/users.\n"
+            "2. Remove unnecessary ACL entries granting indirect admin control.\n"
+            "3. Add identified shadow admins to the AdminSDHolder protected group if they must retain access.\n"
+            "4. Monitor shadow admin accounts with the same rigor as Domain Admins."
+        ),
+        "powershell": (
+            "# Audit ACLs on Domain Admins group for shadow admin detection\n"
+            "$da = Get-ADGroup 'Domain Admins'\n"
+            "$acl = Get-Acl \"AD:\\$($da.DistinguishedName)\"\n"
+            "$acl.Access | Where-Object {{\n"
+            "  $_.ActiveDirectoryRights -match 'GenericAll|WriteDacl|WriteOwner' -and\n"
+            "  $_.IdentityReference -notmatch 'SYSTEM|Domain Admins|Enterprise Admins'\n"
+            "}} | Select IdentityReference, ActiveDirectoryRights, AccessControlType\n\n"
+            "# Remove a shadow admin ACE\n"
+            "$ace = $acl.Access | Where-Object {{$_.IdentityReference -like '*{source}*'}}\n"
+            "$acl.RemoveAccessRule($ace)\n"
+            "Set-Acl \"AD:\\$($da.DistinguishedName)\" $acl"
+        ),
+        "risk_reduction": (
+            "Eliminates hidden administrative backdoors. Shadow admins are frequently "
+            "missed during security reviews but grant equivalent access to Domain Admins."
+        )
+    },
+    "trust_no_sid_filtering": {
+        "explanation": (
+            "SID filtering is a security boundary that prevents SID History injection "
+            "across trust boundaries. When disabled, an attacker who compromises the trusted "
+            "domain can inject arbitrary SIDs (e.g., Enterprise Admins) into their token."
+        ),
+        "fix_guidance": (
+            "1. Enable SID filtering (quarantine) on all external and forest trusts.\n"
+            "2. Review trust relationships using netdom trust /domain.\n"
+            "3. Only disable SID filtering when absolutely required for migrations.\n"
+            "4. Re-enable SID filtering immediately after migration completes."
+        ),
+        "powershell": (
+            "# Check SID filtering status on a trust\n"
+            "netdom trust {source} /domain:{target} /quarantine\n\n"
+            "# Enable SID filtering (quarantine)\n"
+            "netdom trust {source} /domain:{target} /quarantine:yes\n"
+            "Write-Host \"SID filtering enabled on trust to {target}\"\n\n"
+            "# Verify the change\n"
+            "netdom trust {source} /domain:{target} /quarantine"
+        ),
+        "risk_reduction": (
+            "Restores the security boundary between trusted domains. "
+            "Prevents cross-domain privilege escalation via SID History injection attacks."
+        )
+    },
 }
 
 DEFAULT_REMEDIATION = {

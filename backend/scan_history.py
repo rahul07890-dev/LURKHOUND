@@ -141,6 +141,8 @@ def diff_scans(id1: int, id2: int) -> Dict:
     return {
         "scan1": {"id": id1, "timestamp": scan1.get('timestamp'), "risk_score": scan1.get('risk_score')},
         "scan2": {"id": id2, "timestamp": scan2.get('timestamp'), "risk_score": scan2.get('risk_score')},
+        "old_risk_score": scan1.get('risk_score', 0) or 0,
+        "new_risk_score": scan2.get('risk_score', 0) or 0,
         "risk_score_delta": (scan2.get('risk_score', 0) or 0) - (scan1.get('risk_score', 0) or 0),
         "new_findings": new_findings,
         "resolved_findings": resolved_findings,

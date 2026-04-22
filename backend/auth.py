@@ -9,6 +9,7 @@ Auth strategy:
 """
 import logging
 import ssl
+import os
 from typing import Optional, Tuple
 from ldap3 import Server, Connection, ALL, NTLM, SIMPLE, Tls
 from ldap3.core.exceptions import LDAPException, LDAPBindError, LDAPSocketOpenError
@@ -20,7 +21,8 @@ def build_server(dc_ip: str, use_ldaps: bool = True) -> Server:
     """Build the LDAP/LDAPS server object."""
     port = 636 if use_ldaps else 389
     if use_ldaps:
-        tls = Tls(validate=ssl.CERT_NONE)  # Lab environment — skip self-signed cert validation
+        verify_mode = ssl.CERT_REQUIRED if os.getenv("LDAP_TLS_VERIFY", "false").lower() == "true" else ssl.CERT_NONE
+        tls = Tls(validate=verify_mode)  
         server = Server(dc_ip, port=port, use_ssl=True, tls=tls, get_info=ALL)
     else:
         server = Server(dc_ip, port=port, get_info=ALL)
@@ -59,9 +61,11 @@ def _bind_simple(server: Server, domain: str, username: str, password: str) -> T
             )
             if conn.bind():
                 logger.info(f"SIMPLE auth successful for {user_str}")
+                password = None  # noqa - clear immediately on success
                 return True, conn, "Authentication successful (SIMPLE/TLS)"
         except Exception:
-            continue
+            pass
+    password = None  # noqa - clear locally on fail
     return False, None, "SIMPLE bind failed: Invalid credentials or account locked"
 
 

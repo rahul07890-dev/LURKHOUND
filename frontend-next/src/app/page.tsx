@@ -442,24 +442,62 @@ export default function LoginPage() {
         setLoading(true)
         setEnumProgress({ stage: 'CONNECTING...', pct: 0 })
 
-        // Simulate progress stages during REST call
-        const progressInterval = setInterval(() => {
-            setEnumProgress(prev => {
-                if (!prev || prev.pct >= 90) return prev
-                const nextIdx = ENUM_STAGES.findIndex(s => s.pct > (prev?.pct || 0))
-                const next = ENUM_STAGES[nextIdx] || prev
-                return { stage: next.label, pct: Math.min(90, prev.pct + 8) }
-            })
-        }, 1200)
-
         try {
-            const data = await login(form)
-            clearInterval(progressInterval)
-            setEnumProgress({ stage: 'SCAN COMPLETE', pct: 100 })
-            setSession(data)
-            setTimeout(() => router.push('/dashboard/overview'), 600)
+            const wsUrl = window.location.origin.replace(/^http/, 'ws') + '/api/ws/enumerate';
+            // Using direct ws path to backend based on rewrites won't work perfectly for ws with Next.js API Routes out-of-the-box,
+            // so we'll construct the websocket pointing straight to the FastAPI backend.
+            const backendWsUrl = 'ws://localhost:8000/ws/enumerate';
+            
+            const ws = new WebSocket(backendWsUrl);
+            
+            ws.onopen = () => {
+                ws.send(JSON.stringify(form));
+            };
+
+            ws.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.stage === 'error') {
+                    setError(data.message || 'Enumeration failed');
+                    setLoading(false);
+                    setEnumProgress(null);
+                    ws.close();
+                    return;
+                }
+
+                setEnumProgress({ stage: data.message.toUpperCase(), pct: data.progress });
+
+                if (data.stage === 'complete') {
+                    ws.close();
+                    try {
+                        const { setSessionId, getSessionId } = await import('@/lib/api');
+                        setSessionId(data.session_id);
+                        
+                        // Fetch the full data package now that enumeration is complete
+                        const response = await fetch(`http://localhost:8000/api/data/${data.session_id}`, {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) throw new Error("Failed to load session data");
+                        const fullData = await response.json();
+                        
+                        setSession({ session_id: data.session_id, ...fullData });
+                        setTimeout(() => router.push('/dashboard/overview'), 600);
+                    } catch (err: any) {
+                        setError(err.message || 'Failed to finalize session data');
+                        setLoading(false);
+                        setEnumProgress(null);
+                    }
+                }
+            };
+            
+            ws.onerror = () => {
+                // If WS fails, we could potentially fallback to REST here, but we'll enforce WS per specs
+                setError("WebSocket connection failed. Verify the backend is running.");
+                setLoading(false);
+                setEnumProgress(null);
+            };
+
         } catch (err: unknown) {
-            clearInterval(progressInterval)
             setError(err instanceof Error ? err.message : 'Connection failed')
             setLoading(false)
             setEnumProgress(null)

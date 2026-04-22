@@ -181,13 +181,7 @@ MITRE_TECHNIQUES = {
         "url": "https://attack.mitre.org/techniques/T1021/006/",
         "description": "Adversaries may use Valid Accounts to interact with remote systems using Windows Remote Management (WinRM)."
     },
-    "T1484.001": {
-        "id": "T1484.001",
-        "name": "Domain Policy Modification: Group Policy Object Modification",
-        "tactic": "Defense Evasion, Privilege Escalation",
-        "url": "https://attack.mitre.org/techniques/T1484/001/",
-        "description": "Adversaries may modify Group Policy Objects (GPOs) to subvert domain-level permissions."
-    },
+    # NOTE: T1484.001 already defined above (line 30); duplicate removed during audit.
     "T1558.004": {
         "id": "T1558.004",
         "name": "Steal or Forge Kerberos Tickets: AS-REP Roasting",
@@ -236,7 +230,7 @@ FINDING_TO_TECHNIQUES = {
     "local_admin_privilege": ["T1021.002", "T1078"],
     "excessive_admin_members": ["T1078.002", "T1087.002"],
     "user_to_domain_admin_path": ["T1078.002", "T1069.002", "T1098"],
-    "generic_write": ["T1098", "T1134"],
+    "generic_write": ["T1098", "T1098.001", "T1134"],
     "allowed_to_delegate": ["T1558", "T1078"],
     "unconstrained_delegation": ["T1558.001" if "T1558.001" in MITRE_TECHNIQUES else "T1558", "T1207"],
     "lateral_movement_risk": ["T1021", "T1021.002"],
@@ -252,7 +246,7 @@ FINDING_TO_TECHNIQUES = {
     "stale_computer": ["T1078", "T1021.002"],
     "stale_disabled_member": ["T1078.002", "T1098"],
     "empty_security_group": ["T1069.002"],
-    "shadow_admin": ["T1098", "T1078.002", "T1222"],
+    "shadow_admin": ["T1098", "T1098.001", "T1078.002", "T1222"],
 }
 
 
