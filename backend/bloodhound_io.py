@@ -3,9 +3,8 @@ BloodHound Data Import/Export — Feature 4.
 Export session data to BloodHound-compatible JSON format.
 Import SharpHound JSON collection data.
 """
-import json
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +87,7 @@ def export_bloodhound(session_data: Dict[str, Any]) -> Dict:
         target_dn = acl.get("target", "").upper()
         source_dn = acl.get("source", "").upper()
         source_sid = dn_to_sid.get(source_dn)
-        
+
         if not source_sid:
             continue
 

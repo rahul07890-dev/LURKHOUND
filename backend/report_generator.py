@@ -4,7 +4,7 @@ Feature 1: Downloadable HTML report with exec summary, findings, paths, remediat
 """
 import html
 from datetime import datetime, timezone
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 
 def _esc(text: str) -> str:
@@ -39,7 +39,7 @@ def generate_html_report(session_data: Dict[str, Any]) -> str:
         affected = ", ".join(f.get("affected_objects", [])[:5])
         remediation_steps = ""
         if f.get("remediation"):
-            steps = [l.strip() for l in f["remediation"].split("\\n") if l.strip()]
+            steps = [line.strip() for line in f["remediation"].split("\\n") if line.strip()]
             remediation_steps = "<ol>" + "".join(f"<li>{_esc(s)}</li>" for s in steps) + "</ol>"
         ps_fix = ""
         if f.get("powershell_fix"):

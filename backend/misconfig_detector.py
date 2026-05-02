@@ -5,8 +5,8 @@ Each finding includes: description, impact, severity, affected objects.
 """
 import logging
 import networkx as nx
-from typing import List, Dict, Any
-from mitre_mapping import get_techniques_for_finding, MITRE_TECHNIQUES
+from typing import List, Dict
+from mitre_mapping import get_techniques_for_finding
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ def detect_domain_admin_sprawl(groups: List[Dict], users: List[Dict]) -> List[Di
         if 'domain admins' in sam_lower or 'enterprise admins' in sam_lower:
             members = group.get('members', [])
             member_names = [dn_to_name.get(m, m.split(',')[0].replace('CN=', '')) for m in members]
-            
+
             if len(members) > 3:
                 findings.append(_finding(
                     finding_id=f"DA_SPRAWL_{group.get('sam_account_name', 'DA')}",
@@ -70,7 +70,7 @@ def detect_genericall_permissions(G: nx.DiGraph) -> List[Dict]:
             src_name = src_data.get('sam', src.split(',')[0])
             tgt_name = tgt_data.get('sam', tgt.split(',')[0])
             is_privileged_target = (
-                tgt_data.get('is_hvt', False) or 
+                tgt_data.get('is_hvt', False) or
                 tgt_data.get('is_privileged', False) or
                 tgt_data.get('is_admin', False)
             )
@@ -249,7 +249,7 @@ def detect_kerberoastable_users(users: List[Dict]) -> List[Dict]:
     for user in users:
         has_spn = user.get('attributes', {}).get('has_spn', False)
         is_admin = (
-            user.get('attributes', {}).get('is_admin', False) or 
+            user.get('attributes', {}).get('is_admin', False) or
             user.get('attributes', {}).get('adminCount') == '1'
         )
         if has_spn and is_admin:

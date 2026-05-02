@@ -4,16 +4,14 @@ FastAPI Main Application — Active Directory Attack-Path Discovery Mapper
 import logging
 import sys
 import os
-import math
-import json
 import secrets
 import asyncio
 import time
 import ipaddress
 from contextlib import asynccontextmanager
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 
-from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, UploadFile, File, Query, Header
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
@@ -575,7 +573,7 @@ async def get_report(session_id: str, format: str = Query("html")):
                 pdf_bytes = result.getvalue()
             except ImportError:
                 raise HTTPException(status_code=501, detail="PDF export requires 'xhtml2pdf' on Windows. Install with: pip install xhtml2pdf")
-                
+
         from fastapi.responses import Response
         return Response(
             content=pdf_bytes,

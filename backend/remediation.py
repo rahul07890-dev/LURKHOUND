@@ -6,7 +6,7 @@ For each finding, generates:
 - PowerShell remediation command
 - Risk reduction reasoning
 """
-from typing import Dict, List, Any
+from typing import Dict, List
 
 
 REMEDIATION_TEMPLATES = {

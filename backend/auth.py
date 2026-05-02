@@ -9,21 +9,19 @@ Auth strategy:
 """
 import logging
 import ssl
-import os
 from typing import Optional, Tuple
 from ldap3 import Server, Connection, ALL, NTLM, SIMPLE, Tls
 from ldap3.core.exceptions import LDAPException, LDAPBindError, LDAPSocketOpenError
+from config import LDAP_TLS_VERIFY
 
 logger = logging.getLogger(__name__)
-
-from config import LDAP_TLS_VERIFY
 
 def build_server(dc_ip: str, use_ldaps: bool = True) -> Server:
     """Build the LDAP/LDAPS server object."""
     port = 636 if use_ldaps else 389
     if use_ldaps:
         verify_mode = ssl.CERT_REQUIRED if LDAP_TLS_VERIFY else ssl.CERT_NONE
-        tls = Tls(validate=verify_mode)  
+        tls = Tls(validate=verify_mode)
         server = Server(dc_ip, port=port, use_ssl=True, tls=tls, get_info=ALL)
     else:
         server = Server(dc_ip, port=port, get_info=ALL)

@@ -15,10 +15,6 @@ const nextConfig: NextConfig = {
             },
         ]
     },
-    experimental: {
-        reactCompiler: true,
-        cacheComponents: true,
-    },
 }
 
 export default nextConfig

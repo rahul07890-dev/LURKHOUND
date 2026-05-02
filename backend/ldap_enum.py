@@ -4,8 +4,8 @@ Enumerates Users, Groups, Computers, Group Memberships, and ACL permissions
 using the authenticated LDAP connection.
 """
 import logging
-from typing import List, Dict, Any, Optional
-from ldap3 import Connection, SUBTREE, ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES
+from typing import List, Dict, Any
+from ldap3 import Connection, SUBTREE
 from ldap3.core.exceptions import LDAPException
 
 logger = logging.getLogger(__name__)

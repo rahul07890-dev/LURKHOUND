@@ -6,7 +6,7 @@ Edges: MemberOf, AdminTo, HasPermission (GenericAll, WriteDACL, WriteOwner, etc.
 """
 import logging
 import networkx as nx
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +40,8 @@ def _get_node_id(obj: Dict) -> str:
 
 def _get_node_label(obj: Dict) -> str:
     """Get a human-readable label for a node."""
-    return (obj.get('sam_account_name', '') or 
-            obj.get('display_name', '') or 
+    return (obj.get('sam_account_name', '') or
+            obj.get('display_name', '') or
             obj.get('dn', '').split(',')[0].replace('CN=', ''))
 
 
@@ -57,7 +57,7 @@ def _is_hvt(name: str) -> bool:
 def build_graph(normalized_data: Dict) -> nx.DiGraph:
     """
     Build the full permission graph from normalized AD data.
-    
+
     Returns a directed graph where:
     - Nodes represent AD objects (User, Group, Computer)
     - Edges represent relationships and permissions
@@ -140,7 +140,6 @@ def build_graph(normalized_data: Dict) -> nx.DiGraph:
                 )
 
     # Add MemberOf edges from group->group (nested groups) and group members
-    dn_map = normalized_data.get('dn_map', {})
     for group in groups:
         src_id = _get_node_id(group)
         if not src_id or src_id not in G:
