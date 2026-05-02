@@ -9,7 +9,6 @@ Detects multi-hop and specific attack scenarios:
   • Password-never-expires privileged accounts
 """
 import logging
-import os
 import networkx as nx
 from typing import List, Dict, Any, Optional
 from mitre_mapping import (
@@ -19,6 +18,8 @@ from mitre_mapping import (
 )
 
 logger = logging.getLogger(__name__)
+
+import os
 
 MAX_PATH_DEPTH = int(os.getenv("MAX_PATH_DEPTH", 6))      # Max hops in BFS/DFS traversal
 MAX_PATHS_PER_PAIR = 1  # Only keep the shortest path per source→target pair
@@ -669,22 +670,14 @@ def find_shortest_path_bfs(G: nx.DiGraph, source: str, target: str) -> Optional[
 
 def find_all_paths_dfs(G: nx.DiGraph, source: str, target: str, max_depth: int = MAX_PATH_DEPTH) -> List[List[str]]:
     all_p: List[List[str]] = []
-
     def dfs(cur: str, path: List[str], visited: set[str]) -> None:
-        if len(path) > max_depth:
-            return
-        if cur == target:
-            all_p.append(list(path))
-            return
+        if len(path) > max_depth: return
+        if cur == target: all_p.append(list(path)); return
         for nb in G.successors(cur):
             if nb not in visited:
-                visited.add(nb)
-                path.append(nb)
+                visited.add(nb); path.append(nb)
                 dfs(nb, path, visited)
-                path.pop()
-                visited.remove(nb)
-
-    if source not in G or target not in G:
-        return []
+                path.pop(); visited.remove(nb)
+    if source not in G or target not in G: return []
     dfs(source, [source], {source})
     return sorted(all_p, key=len)

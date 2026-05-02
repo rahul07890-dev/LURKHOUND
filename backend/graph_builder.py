@@ -57,7 +57,7 @@ def _is_hvt(name: str) -> bool:
 def build_graph(normalized_data: Dict) -> nx.DiGraph:
     """
     Build the full permission graph from normalized AD data.
-
+    
     Returns a directed graph where:
     - Nodes represent AD objects (User, Group, Computer)
     - Edges represent relationships and permissions
@@ -140,6 +140,7 @@ def build_graph(normalized_data: Dict) -> nx.DiGraph:
                 )
 
     # Add MemberOf edges from group->group (nested groups) and group members
+    dn_map = normalized_data.get('dn_map', {})
     for group in groups:
         src_id = _get_node_id(group)
         if not src_id or src_id not in G:

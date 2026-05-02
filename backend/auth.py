@@ -12,9 +12,10 @@ import ssl
 from typing import Optional, Tuple
 from ldap3 import Server, Connection, ALL, NTLM, SIMPLE, Tls
 from ldap3.core.exceptions import LDAPException, LDAPBindError, LDAPSocketOpenError
-from config import LDAP_TLS_VERIFY
 
 logger = logging.getLogger(__name__)
+
+from config import LDAP_TLS_VERIFY
 
 def build_server(dc_ip: str, use_ldaps: bool = True) -> Server:
     """Build the LDAP/LDAPS server object."""
