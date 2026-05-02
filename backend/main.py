@@ -1,6 +1,5 @@
 """
 FastAPI Main Application — Active Directory Attack-Path Discovery Mapper
-MARVEL.local | LDAPS port 636
 """
 import logging
 import sys
@@ -10,14 +9,23 @@ import json
 import secrets
 import asyncio
 import time
+import ipaddress
 from contextlib import asynccontextmanager
 from typing import Dict, Any, Optional, List
 
-from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, UploadFile, File, Query
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, UploadFile, File, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 import uvicorn
+
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    _HAS_SLOWAPI = True
+except ImportError:
+    _HAS_SLOWAPI = False
 
 # Add backend directory to path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -34,7 +42,7 @@ from scan_history import save_scan, list_scans, get_scan, diff_scans
 from report_generator import generate_html_report, generate_json_report
 from bloodhound_io import export_bloodhound, import_bloodhound
 from risk import calculate_risk_score
-from config import API_PORT, LOG_LEVEL, SESSION_TTL_MINUTES, CORS_ORIGINS
+from config import API_PORT, LOG_LEVEL, SESSION_TTL_MINUTES, CORS_ORIGINS, LDAP_TLS_VERIFY
 
 # Configure logging
 logging.basicConfig(
@@ -59,6 +67,8 @@ async def _session_reaper():
                    if now - data.get('_created_at', now) > ttl_seconds]
         for sid in expired:
             del SESSION_STORE[sid]
+            # Also clean up FINDING_STATUS_STORE to prevent memory leak
+            FINDING_STATUS_STORE.pop(sid, None)
             logger.info(f"Session {sid[:8]}... expired and cleared (TTL={SESSION_TTL_MINUTES}m)")
 
 
@@ -66,10 +76,14 @@ async def _session_reaper():
 async def lifespan(app: FastAPI):
     logger.info("🚀 AD Attack-Path Discovery Mapper starting...")
     logger.info(f"Session TTL: {SESSION_TTL_MINUTES} minutes")
+    if not LDAP_TLS_VERIFY:
+        logger.warning("⚠️  LDAP_TLS_VERIFY=false — TLS certificate validation is DISABLED. "
+                       "Set LDAP_TLS_VERIFY=true in .env for production deployments.")
     reaper_task = asyncio.create_task(_session_reaper())
     yield
     reaper_task.cancel()
     SESSION_STORE.clear()
+    FINDING_STATUS_STORE.clear()
     logger.info("🛑 Server shutting down. Session data cleared.")
 
 
@@ -80,6 +94,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Rate limiting (requires slowapi: pip install slowapi)
+if _HAS_SLOWAPI:
+    limiter = Limiter(key_func=get_remote_address)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+else:
+    limiter = None
+    logger.warning("slowapi not installed — rate limiting disabled. Install with: pip install slowapi")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -87,6 +110,117 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+# ── SSRF Protection ──────────────────────────────────────────────────────────
+
+_BLOCKED_NETWORKS = [
+    ipaddress.ip_network('127.0.0.0/8'),       # Loopback
+    ipaddress.ip_network('169.254.0.0/16'),     # Link-local / cloud metadata
+    ipaddress.ip_network('0.0.0.0/8'),          # Current network
+    ipaddress.ip_network('::1/128'),            # IPv6 loopback
+]
+
+
+def _validate_dc_ip(ip_str: str) -> str:
+    """Validate dc_ip is a legitimate, non-loopback, non-metadata IP address."""
+    try:
+        addr = ipaddress.ip_address(ip_str.strip())
+    except ValueError:
+        # Might be a hostname — allow but warn
+        if any(c in ip_str for c in ['/', '\\', '..', '%']):
+            raise HTTPException(status_code=400, detail="Invalid DC address format")
+        return ip_str.strip()
+    for net in _BLOCKED_NETWORKS:
+        if addr in net:
+            raise HTTPException(
+                status_code=400,
+                detail=f"DC IP {ip_str} is a blocked address (loopback/link-local/metadata). "
+                       f"Provide a valid domain controller IP."
+            )
+    return str(addr)
+
+
+# ── Shared Analysis Pipeline ─────────────────────────────────────────────────
+
+def _extract_domain_admins(users: List[Dict], groups: List[Dict]) -> List[str]:
+    """Extract domain admin usernames using O(n) DN→user map instead of O(n²) nested loop."""
+    dn_to_sam: Dict[str, str] = {u['dn']: u.get('sam_account_name', '') for u in users}
+    domain_admins = []
+    for group in groups:
+        if 'domain admins' in group.get('sam_account_name', '').lower():
+            for member_dn in group.get('members', []):
+                sam = dn_to_sam.get(member_dn)
+                if sam:
+                    domain_admins.append(sam)
+    return domain_admins
+
+
+def _run_ad_pipeline(normalized: Dict, domain: str, dc_ip: str) -> Dict[str, Any]:
+    """
+    Shared analysis pipeline used by both REST and WebSocket endpoints.
+    Eliminates code duplication between api_authenticate and ws_enumerate.
+    Returns a complete session dict ready for SESSION_STORE.
+    """
+    users = normalized['users']
+    groups = normalized['groups']
+    computers = normalized['computers']
+
+    # Build graph
+    G = build_graph(normalized)
+
+    # Discover attack paths
+    hvts = get_hvt_nodes(G)
+    dcs = get_domain_controllers(G)
+    attack_path_list = run_full_discovery(
+        G, hvts + dcs,
+        gpos=normalized.get('gpos', []),
+        ous=normalized.get('ous', []),
+    )
+
+    # Detect misconfigurations and enrich with remediation (called ONCE)
+    findings = run_all_detections(
+        G, users, groups, computers,
+        password_policies=normalized.get('password_policies', []),
+        trusts=normalized.get('trusts', []),
+    )
+    findings = enrich_findings_with_remediation(findings, domain=domain)
+
+    # Build domain summary using O(n) lookup
+    domain_admins = _extract_domain_admins(users, groups)
+
+    risk_score, risk_level = calculate_risk_score(findings, attack_path_list, users, domain_admins)
+
+    summary = {
+        "total_users": len(users),
+        "total_groups": len(groups),
+        "total_computers": len(computers),
+        "privileged_accounts": len([u for u in users if u.get('attributes', {}).get('is_admin')]),
+        "domain_admins": domain_admins,
+        "attack_paths_found": len(attack_path_list),
+        "findings_count": len(findings),
+        "risk_score": risk_score,
+        "risk_level": risk_level,
+        "domain": domain,
+        "dc_ip": dc_ip,
+    }
+
+    return {
+        "_created_at": time.time(),
+        "users": users,
+        "groups": groups,
+        "computers": computers,
+        "acls": normalized.get('acls', []),
+        "attack_paths": attack_path_list,
+        "findings": findings,
+        "summary": summary,
+        "graph": graph_to_dict(G),
+        "_graph_obj": G,  # Cache graph object to avoid rebuild on /api/path/
+        "gpos": normalized.get('gpos', []),
+        "ous": normalized.get('ous', []),
+        "trusts": normalized.get('trusts', []),
+        "password_policies": normalized.get('password_policies', []),
+    }
 
 
 def _validate_string_input(value: str, field_name: str, max_len: int = 256) -> str:
@@ -119,14 +253,21 @@ async def health_check():
 
 
 @app.post("/api/authenticate")
-async def api_authenticate(request: AuthRequest):
+async def api_authenticate(request: AuthRequest, req: Request = None):
     """
     Authenticate to Active Directory.
     Returns session_id for subsequent API calls.
     Credentials are NEVER stored — only the resulting connection data.
     """
-    # Input validation
-    dc_ip = _validate_string_input(request.dc_ip, "dc_ip", 64)
+    # Rate limiting (if slowapi is available)
+    if limiter and req:
+        try:
+            await limiter._check_request_limit(req, api_authenticate, [("5/minute", None)])
+        except Exception:
+            pass  # Graceful degradation if rate limiting fails
+
+    # Input validation + SSRF protection
+    dc_ip = _validate_dc_ip(_validate_string_input(request.dc_ip, "dc_ip", 64))
     username = _validate_string_input(request.username, "username", 128)
     domain = _validate_string_input(request.domain, "domain", 128)
     password = request.password  # Not logged, not stored
@@ -156,86 +297,16 @@ async def api_authenticate(request: AuthRequest):
         raw_data = run_full_enumeration(conn, base_dn)
         close_connection(conn)  # Close LDAP connection — done with auth
 
-        # Normalize data
         normalized = normalize_all(raw_data)
 
-        # Build graph
-        G = build_graph(normalized)
-
-        # Discover attack paths
-        hvts = get_hvt_nodes(G)
-        dcs = get_domain_controllers(G)
-        attack_path_list = run_full_discovery(
-            G, hvts + dcs,
-            gpos=normalized.get('gpos', []),
-            ous=normalized.get('ous', []),
-        )
-
-        # Detect misconfigurations
-        findings = run_all_detections(
-            G, normalized['users'], normalized['groups'], normalized['computers'],
-            password_policies=normalized.get('password_policies', []),
-            trusts=normalized.get('trusts', []),
-        )
-        findings = enrich_findings_with_remediation(findings)
-
-        # Build domain summary
-        users = normalized['users']
-        groups = normalized['groups']
-        computers = normalized['computers']
-
-        domain_admins = []
-        for group in groups:
-            if 'domain admins' in group.get('sam_account_name', '').lower():
-                for member_dn in group.get('members', []):
-                    for user in users:
-                        if user['dn'] == member_dn:
-                            domain_admins.append(user.get('sam_account_name', ''))
-
-        critical_count = sum(1 for f in findings if f['severity'] == 'Critical')
-        high_count     = sum(1 for f in findings if f['severity'] == 'High')
-        medium_count   = sum(1 for f in findings if f['severity'] == 'Medium')
-        total_findings = len(findings)
-        path_count     = len(attack_path_list)
-
-        # ── Risk scoring (via risk.py utility) ──────────────────────────────
-        risk_score, risk_level = calculate_risk_score(findings, attack_path_list, users, domain_admins)
-
-        summary = {
-            "total_users": len(users),
-            "total_groups": len(groups),
-            "total_computers": len(computers),
-            "privileged_accounts": len([u for u in users if u.get('attributes', {}).get('is_admin')]),
-            "domain_admins": domain_admins,
-            "attack_paths_found": len(attack_path_list),
-            "findings_count": len(findings),
-            "risk_score": risk_score,
-            "risk_level": risk_level,
-            "domain": domain,
-            "dc_ip": dc_ip,
-        }
-
-        # Store results in session (NOT credentials)
-        SESSION_STORE[session_id] = {
-            "_created_at": time.time(),
-            "users": users,
-            "groups": groups,
-            "computers": computers,
-            "acls": normalized.get('acls', []),
-            "attack_paths": attack_path_list,
-            "findings": enrich_findings_with_remediation(findings),
-            "summary": summary,
-            "graph": graph_to_dict(G),
-            # Phase 1 data
-            "gpos": normalized.get('gpos', []),
-            "ous": normalized.get('ous', []),
-            "trusts": normalized.get('trusts', []),
-            "password_policies": normalized.get('password_policies', []),
-        }
+        # Use shared pipeline (eliminates duplication + fixes double-enrich bug)
+        session_data = _run_ad_pipeline(normalized, domain, dc_ip)
+        SESSION_STORE[session_id] = session_data
 
         logger.info(f"Session {session_id[:8]}... created. "
-                    f"{len(users)} users, {len(groups)} groups, {len(computers)} computers, "
-                    f"{len(attack_path_list)} paths, {len(findings)} findings")
+                    f"{len(session_data['users'])} users, {len(session_data['groups'])} groups, "
+                    f"{len(session_data['computers'])} computers, "
+                    f"{len(session_data['attack_paths'])} paths, {len(session_data['findings'])} findings")
 
         # Auto-save to scan history
         try:
@@ -248,7 +319,7 @@ async def api_authenticate(request: AuthRequest):
             "success": True,
             "session_id": session_id,
             "message": f"Successfully enumerated {domain}",
-            "summary": summary
+            "summary": session_data["summary"]
         }
 
     except Exception as e:
@@ -382,6 +453,7 @@ async def logout(session_id: str):
     """Clear session data."""
     if session_id in SESSION_STORE:
         del SESSION_STORE[session_id]
+        FINDING_STATUS_STORE.pop(session_id, None)
         logger.info(f"Session {session_id[:8]}... cleared")
     return {"success": True, "message": "Session cleared"}
 
@@ -426,14 +498,17 @@ async def get_shortest_path(session_id: str, source: str = Query(...), target: s
     """Calculate shortest path between two objects."""
     import networkx as nx
     session = _get_session(session_id)
-    graph_data = session["graph"]
 
-    # Rebuild networkx graph
-    G = nx.DiGraph()
-    for node in graph_data["nodes"]:
-        G.add_node(node["id"], **node)
-    for edge in graph_data["edges"]:
-        G.add_edge(edge["source"], edge["target"], **edge)
+    # Use cached graph object if available, otherwise rebuild from JSON
+    G = session.get("_graph_obj")
+    if G is None:
+        graph_data = session["graph"]
+        G = nx.DiGraph()
+        for node in graph_data["nodes"]:
+            G.add_node(node["id"], **node)
+        for edge in graph_data["edges"]:
+            G.add_edge(edge["source"], edge["target"], **edge)
+        session["_graph_obj"] = G  # Cache for subsequent calls
 
     # Find source/target nodes by SAM name
     source_upper = source.upper()
@@ -538,63 +613,24 @@ async def import_bloodhound_data(request: Request):
 
     raw_data = import_bloodhound(body)
     normalized = normalize_all(raw_data)
-    G = build_graph(normalized)
 
-    hvts = get_hvt_nodes(G)
-    dcs = get_domain_controllers(G)
-    attack_path_list = run_full_discovery(
-        G, hvts + dcs,
-        gpos=normalized.get('gpos', []),
-        ous=normalized.get('ous', []),
-    )
-    findings = run_all_detections(
-        G, normalized['users'], normalized['groups'], normalized['computers'],
-        password_policies=normalized.get('password_policies', []),
-        trusts=normalized.get('trusts', []),
-    )
-    findings = enrich_findings_with_remediation(findings)
-
+    # Use shared pipeline
     session_id = secrets.token_hex(32)
-    users = normalized['users']
-    groups = normalized['groups']
-    computers = normalized['computers']
+    session_data = _run_ad_pipeline(normalized, "Imported", "BloodHound")
+    SESSION_STORE[session_id] = session_data
 
-    summary = {
-        "total_users": len(users),
-        "total_groups": len(groups),
-        "total_computers": len(computers),
-        "privileged_accounts": len([u for u in users if u.get('attributes', {}).get('is_admin')]),
-        "domain_admins": [],
-        "attack_paths_found": len(attack_path_list),
-        "findings_count": len(findings),
-        "risk_score": 0,
-        "risk_level": "Low",
-        "domain": "Imported",
-        "dc_ip": "BloodHound",
-    }
-
-    SESSION_STORE[session_id] = {
-        "users": users, "groups": groups, "computers": computers,
-        "acls": normalized.get('acls', []),
-        "attack_paths": attack_path_list,
-        "findings": findings,
-        "summary": summary,
-        "graph": graph_to_dict(G),
-        "gpos": [], "ous": [], "trusts": [], "password_policies": [],
-    }
-
-    return {"success": True, "session_id": session_id, "summary": summary}
+    return {"success": True, "session_id": session_id, "summary": session_data["summary"]}
 
 
 # ── Phase 2: WebSocket Progress (Feature 5) ─────────────────────────────
 
 @app.websocket("/ws/enumerate")
 async def ws_enumerate(websocket: WebSocket):
-    """WebSocket endpoint for real-time enumeration progress."""
+    """WebSocket endpoint for real-time staged progress notifications."""
     await websocket.accept()
     try:
-        data = await websocket.receive_json()
-        dc_ip = data.get("dc_ip", "")
+        data = await asyncio.wait_for(websocket.receive_json(), timeout=30)
+        dc_ip = _validate_dc_ip(data.get("dc_ip", ""))
         username = data.get("username", "")
         password = data.get("password", "")
         domain = data.get("domain", "")
@@ -612,7 +648,6 @@ async def ws_enumerate(websocket: WebSocket):
         await websocket.send_json({"stage": "auth", "progress": 10, "message": "Authenticated. Starting enumeration..."})
         base_dn = get_base_dn(domain)
 
-        # Enumeration stages
         from ldap_enum import (enumerate_users, enumerate_groups, enumerate_computers,
                                enumerate_acls, enumerate_gpos, enumerate_ous,
                                enumerate_trusts, enumerate_password_policies)
@@ -651,58 +686,12 @@ async def ws_enumerate(websocket: WebSocket):
         await websocket.send_json({"stage": "normalize", "progress": 70, "message": "Normalizing data..."})
         normalized = normalize_all(raw_data)
 
-        await websocket.send_json({"stage": "graph", "progress": 75, "message": "Building permission graph..."})
-        G = build_graph(normalized)
+        await websocket.send_json({"stage": "analyze", "progress": 80, "message": "Running analysis pipeline..."})
 
-        await websocket.send_json({"stage": "paths", "progress": 80, "message": "Discovering attack paths..."})
-        hvts = get_hvt_nodes(G)
-        dcs = get_domain_controllers(G)
-        attack_path_list = run_full_discovery(G, hvts + dcs, gpos=normalized.get('gpos', []), ous=normalized.get('ous', []))
-
-        await websocket.send_json({"stage": "findings", "progress": 88, "message": "Detecting misconfigurations..."})
-        findings = run_all_detections(
-            G, normalized['users'], normalized['groups'], normalized['computers'],
-            password_policies=normalized.get('password_policies', []),
-            trusts=normalized.get('trusts', []),
-        )
-        findings = enrich_findings_with_remediation(findings)
-
-        await websocket.send_json({"stage": "finalize", "progress": 95, "message": "Finalizing session..."})
-
-        # Build summary and session (same as api_authenticate)
-        users = normalized['users']
-        groups = normalized['groups']
-        computers = normalized['computers']
-
-        domain_admins = []
-        for group in groups:
-            if 'domain admins' in group.get('sam_account_name', '').lower():
-                for member_dn in group.get('members', []):
-                    for user in users:
-                        if user['dn'] == member_dn:
-                            domain_admins.append(user.get('sam_account_name', ''))
-
-        risk_score, risk_level = calculate_risk_score(findings, attack_path_list, users, domain_admins)
-        priv_count = len([u for u in users if u.get('attributes', {}).get('is_admin')])
-
-        summary = {
-            "total_users": len(users), "total_groups": len(groups), "total_computers": len(computers),
-            "privileged_accounts": priv_count, "domain_admins": domain_admins,
-            "attack_paths_found": len(attack_path_list), "findings_count": len(findings),
-            "risk_score": risk_score, "risk_level": risk_level,
-            "domain": domain, "dc_ip": dc_ip,
-        }
-
+        # Use shared pipeline (eliminates 100+ lines of duplicated code)
         session_id = secrets.token_hex(32)
-        SESSION_STORE[session_id] = {
-            "_created_at": time.time(),
-            "users": users, "groups": groups, "computers": computers,
-            "acls": normalized.get('acls', []),
-            "attack_paths": attack_path_list, "findings": findings,
-            "summary": summary, "graph": graph_to_dict(G),
-            "gpos": normalized.get('gpos', []), "ous": normalized.get('ous', []),
-            "trusts": normalized.get('trusts', []), "password_policies": normalized.get('password_policies', []),
-        }
+        session_data = _run_ad_pipeline(normalized, domain, dc_ip)
+        SESSION_STORE[session_id] = session_data
 
         try:
             scan_id = save_scan(SESSION_STORE[session_id])
@@ -714,11 +703,17 @@ async def ws_enumerate(websocket: WebSocket):
             "stage": "complete", "progress": 100,
             "message": "Enumeration complete",
             "session_id": session_id,
-            "summary": summary,
+            "summary": session_data["summary"],
         })
 
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected")
+    except asyncio.TimeoutError:
+        logger.warning("WebSocket connection timed out waiting for credentials")
+        try:
+            await websocket.send_json({"stage": "error", "progress": 0, "message": "Connection timed out"})
+        except Exception:
+            pass
     except Exception as e:
         logger.error(f"WebSocket enumeration error: {e}", exc_info=True)
         try:

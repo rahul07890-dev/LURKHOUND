@@ -173,7 +173,22 @@ def detect_kerberoast_to_admin_paths(G: nx.DiGraph) -> List[Dict]:
     """
     Kerberoastable account → has SPN → can be cracked offline
     → if the account is admin / member of DA → full escalation path.
+
+    Optimized: pre-compute target DA/HVT nodes in O(n), then iterate
+    only SPN users against targets → O(k * |targets| * BFS) instead of O(n² * BFS).
     """
+    # Pre-compute target set (DA groups, Enterprise Admins, HVTs) — O(n)
+    targets = []
+    for tgt_n, tgt_data in G.nodes(data=True):
+        tgt_sam = tgt_data.get("sam", tgt_n)
+        if ("domain admins" in tgt_sam.lower()
+                or "enterprise admins" in tgt_sam.lower()
+                or tgt_data.get("is_hvt", False)):
+            targets.append((tgt_n, tgt_data, tgt_sam))
+
+    if not targets:
+        return []
+
     paths = []
     for n, data in G.nodes(data=True):
         if not data.get("has_spn"):
@@ -182,15 +197,9 @@ def detect_kerberoast_to_admin_paths(G: nx.DiGraph) -> List[Dict]:
             continue
         sam = data.get("sam", n)
 
-        # Find any DA group reachable from this node
-        for tgt_n, tgt_data in G.nodes(data=True):
-            tgt_sam = tgt_data.get("sam", tgt_n)
-            is_da_group = (
-                "domain admins" in tgt_sam.lower()
-                or "enterprise admins" in tgt_sam.lower()
-                or tgt_data.get("is_hvt", False)
-            )
-            if not is_da_group or tgt_n == n:
+        # Only BFS to pre-identified targets
+        for tgt_n, tgt_data, tgt_sam in targets:
+            if tgt_n == n:
                 continue
 
             path = _bfs(G, n, tgt_n)
@@ -201,9 +210,8 @@ def detect_kerberoast_to_admin_paths(G: nx.DiGraph) -> List[Dict]:
             # Prepend a "virtual" Kerberoast step in the description
             techniques = get_techniques_for_path(edges, path_type="kerberoast_escalation",
                                                   extra=["T1558.003"])
-            tgt_data_final = G.nodes.get(tgt_n, {})
 
-            severity = "Critical" if tgt_data_final.get("is_hvt") or "domain admins" in tgt_sam.lower() else "High"
+            severity = "Critical" if tgt_data.get("is_hvt") or "domain admins" in tgt_sam.lower() else "High"
             spn_list  = data.get('spn_list') or []
             spn_label = spn_list[0] if spn_list else 'SPN'
             description = (
@@ -222,7 +230,7 @@ def detect_kerberoast_to_admin_paths(G: nx.DiGraph) -> List[Dict]:
                 "length":    len(path),           # +1 to reflect the kerberoast step
                 "source":    sam,
                 "target":    tgt_sam,
-                "target_type": tgt_data_final.get("object_type", "Group"),
+                "target_type": tgt_data.get("object_type", "Group"),
                 "path_type": "kerberoast_escalation",
             })
     return paths

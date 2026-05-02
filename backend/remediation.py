@@ -459,7 +459,7 @@ DEFAULT_REMEDIATION = {
 }
 
 
-def generate_remediation(finding: Dict) -> Dict:
+def generate_remediation(finding: Dict, domain: str = "DOMAIN.local") -> Dict:
     """Generate a full remediation block for a given finding."""
     finding_type = finding.get('finding_type', '')
     template = REMEDIATION_TEMPLATES.get(finding_type, DEFAULT_REMEDIATION)
@@ -468,7 +468,10 @@ def generate_remediation(finding: Dict) -> Dict:
     affected = finding.get('affected_objects', [])
     source = affected[0] if len(affected) > 0 else 'SOURCE'
     target = affected[1] if len(affected) > 1 else 'TARGET'
-    dn = f"CN={target},DC=MARVEL,DC=local"
+
+    # Build DN dynamically from domain parameter instead of hardcoding
+    dc_parts = ",".join(f"DC={part}" for part in domain.split("."))
+    dn = f"CN={target},{dc_parts}"
 
     powershell = template['powershell'].replace('{source}', source).replace('{target}', target).replace('{dn}', dn)
 
@@ -480,11 +483,11 @@ def generate_remediation(finding: Dict) -> Dict:
     }
 
 
-def enrich_findings_with_remediation(findings: List[Dict]) -> List[Dict]:
+def enrich_findings_with_remediation(findings: List[Dict], domain: str = "DOMAIN.local") -> List[Dict]:
     """Add remediation data to each finding."""
     enriched = []
     for finding in findings:
-        remediation = generate_remediation(finding)
+        remediation = generate_remediation(finding, domain=domain)
         enriched_finding = {
             **finding,
             "remediation": remediation['fix_guidance'],
@@ -494,3 +497,4 @@ def enrich_findings_with_remediation(findings: List[Dict]) -> List[Dict]:
         }
         enriched.append(enriched_finding)
     return enriched
+
